@@ -30,7 +30,6 @@ void reg_rand(Context65 * c, uint8_t live) {
 	if(live & REG_A) c->a = rand();
 	if(live & REG_X) c->x = rand();
 	if(live & REG_Y) c->y = rand();
-//	printf("%02x %02x %02x\n", c->a, c->x, c->y) ; // TODO
 }
 
 void reg_out(char * s) {
