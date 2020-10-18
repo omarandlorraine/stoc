@@ -332,37 +332,29 @@ void asl(Context65 * c) {
     putvalue(c, result);
 }
 
-void bcc(Context65 * c) {
+
+void bra(Context65 * c) {
     uint16_t reladdr = (uint16_t)read6502(c, c->pc++);
     if (reladdr & 0x80) reladdr |= 0xFF00;
-    if ((c->status & FLAG_CARRY) == 0) {
-        uint16_t oldpc = c->pc;
-        c->pc += reladdr;
-        if ((oldpc & 0xFF00) != (c->pc & 0xFF00)) c->clockticks += 2; //check if jump crossed a page boundary
-            else c->clockticks++;
-    }
+	uint16_t oldpc = c->pc;
+	c->pc += reladdr;
+	if ((oldpc & 0xFF00) != (c->pc & 0xFF00)) c->clockticks += 2; //check if jump crossed a page boundary
+		else c->clockticks++;
+}
+
+void bcc(Context65 * c) {
+    if ((c->status & FLAG_CARRY) == 0) 
+    	bra(c);
 }
 
 void bcs(Context65 * c) {
-    uint16_t reladdr = (uint16_t)read6502(c, c->pc++);
-    if (reladdr & 0x80) reladdr |= 0xFF00;
-    if ((c->status & FLAG_CARRY) == FLAG_CARRY) {
-        uint16_t oldpc = c->pc;
-        c->pc += reladdr;
-        if ((oldpc & 0xFF00) != (c->pc & 0xFF00)) c->clockticks += 2; //check if jump crossed a page boundary
-            else c->clockticks++;
-    }
+    if ((c->status & FLAG_CARRY) == FLAG_CARRY) 
+		bra(c);
 }
 
 void beq(Context65 * c) {
-    uint16_t reladdr = (uint16_t)read6502(c, c->pc++);
-    if (reladdr & 0x80) reladdr |= 0xFF00;
-    if ((c->status & FLAG_ZERO) == FLAG_ZERO) {
-        uint16_t oldpc = c->pc;
-        c->pc += reladdr;
-        if ((oldpc & 0xFF00) != (c->pc & 0xFF00)) c->clockticks += 2; //check if jump crossed a page boundary
-            else c->clockticks++;
-    }
+    if ((c->status & FLAG_ZERO) == FLAG_ZERO)
+		bra(c);
 }
 
 void bit(Context65 * c) {
@@ -374,36 +366,18 @@ void bit(Context65 * c) {
 }
 
 void bmi(Context65 * c) {
-    uint16_t reladdr = (uint16_t)read6502(c, c->pc++);
-    if (reladdr & 0x80) reladdr |= 0xFF00;
-    if ((c->status & FLAG_SIGN) == FLAG_SIGN) {
-        uint16_t oldpc = c->pc;
-        c->pc += reladdr;
-        if ((oldpc & 0xFF00) != (c->pc & 0xFF00)) c->clockticks += 2; //check if jump crossed a page boundary
-            else c->clockticks++;
-    }
+    if ((c->status & FLAG_SIGN) == FLAG_SIGN)
+		bra(c);
 }
 
 void bne(Context65 * c) {
-    uint16_t reladdr = (uint16_t)read6502(c, c->pc++);
-    if (reladdr & 0x80) reladdr |= 0xFF00;
-    if ((c->status & FLAG_ZERO) == 0) {
-        uint8_t oldpc = c->pc;
-        c->pc += reladdr;
-        if ((oldpc & 0xFF00) != (c->pc & 0xFF00)) c->clockticks += 2; //check if jump crossed a page boundary
-            else c->clockticks++;
-    }
+    if ((c->status & FLAG_ZERO) == 0)
+		bra(c);
 }
 
 void bpl(Context65 * c) {
-    uint16_t reladdr = (uint16_t)read6502(c, c->pc++);
-    if (reladdr & 0x80) reladdr |= 0xFF00;
-    if ((c->status & FLAG_SIGN) == 0) {
-        uint16_t oldpc = c->pc;
-        c->pc += reladdr;
-        if ((oldpc & 0xFF00) != (c->pc & 0xFF00)) c->clockticks += 2; //check if jump crossed a page boundary
-            else c->clockticks++;
-    }
+    if ((c->status & FLAG_SIGN) == 0)
+		bra(c);
 }
 
 void brk(Context65 * c) {
@@ -415,25 +389,13 @@ void brk(Context65 * c) {
 }
 
 void bvc(Context65 * c) {
-    uint16_t reladdr = (uint16_t)read6502(c, c->pc++);
-    if (reladdr & 0x80) reladdr |= 0xFF00;
-    if ((c->status & FLAG_OVERFLOW) == 0) {
-        uint16_t oldpc = c->pc;
-        c->pc += reladdr;
-        if ((oldpc & 0xFF00) != (c->pc & 0xFF00)) c->clockticks += 2; //check if jump crossed a page boundary
-            else c->clockticks++;
-    }
+    if ((c->status & FLAG_OVERFLOW) == 0)
+		bra(c);
 }
 
 void bvs(Context65 * c) {
-    uint16_t reladdr = (uint16_t)read6502(c, c->pc++);
-    if (reladdr & 0x80) reladdr |= 0xFF00;
-    if ((c->status & FLAG_OVERFLOW) == FLAG_OVERFLOW) {
-        uint16_t oldpc = c->pc;
-        c->pc += reladdr;
-        if ((oldpc & 0xFF00) != (c->pc & 0xFF00)) c->clockticks += 2; //check if jump crossed a page boundary
-            else c->clockticks++;
-    }
+    if ((c->status & FLAG_OVERFLOW) == FLAG_OVERFLOW)
+		bra(c);
 }
 
 void clc(Context65 * c) {
