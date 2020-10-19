@@ -5,7 +5,6 @@
  *   -  position-independent code
  */
 #include "instr.h"
-#include "6502.h"
 
 static int conditionals = 0;
 static int pointers = 0;

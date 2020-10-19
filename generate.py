@@ -45,7 +45,6 @@ for line in sys.stdin:
     opcodes.append(opc)
 
 print("#include \"stoc.h\"")
-print("#include \"6502.h\"")
 print("#include <string.h>")
 print("#include <stdio.h>")
 print("#include <stdlib.h>")
