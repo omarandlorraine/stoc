@@ -35,10 +35,8 @@ bool parse_operand_absolute(char * operand, uint16_t * out) {
 bool parse_operand_immediate(char * operand, uint16_t * out) {
 	if(!operand)
 		return 0;
-	if(operand[0] != '#') {
-		printf("\"%s\" is not immediate\n", operand);
+	if(operand[0] != '#')
 		return 0;
-	}
 	operand++;
 	if(parse_hexadecimal(operand, out)) return 1;
 	if(parse_decimal(operand, out)) return 1;
