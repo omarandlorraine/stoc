@@ -7,21 +7,25 @@
 bool opcode_legal_p(uint8_t op);
 int opcode_length(uint8_t op);
 int opcode_branch_p(uint8_t op);
-uint8_t implied_instruction(char * op);
+bool implied_instruction(char * op, uint8_t * out);
 int is_implied_instruction(uint8_t op);
-uint8_t immediate_instruction(char * op);
+bool immediate_instruction(char * op, uint8_t * out);
 int is_immediate_instruction(uint8_t op);
-uint8_t indirect_x_instruction(char * op);
+bool indirect_x_instruction(char * op, uint8_t * out);
 int is_indirect_x_instruction(uint8_t op);
-uint8_t indirect_y_instruction(char * op);
+bool indirect_y_instruction(char * op, uint8_t * out);
 int is_indirect_y_instruction(uint8_t op);
 int is_absolute_x_instruction(uint8_t op);
 int is_absolute_y_instruction(uint8_t op);
 int is_absolute_instruction(uint8_t op);
+bool absolute_instruction(char * op, uint8_t * out);
 int is_zero_page_instruction(uint8_t op);
+bool zero_page_instruction(char * op, uint8_t * out);
 int is_zero_page_x_instruction(uint8_t op);
 int is_zero_page_y_instruction(uint8_t op);
 int is_relative_instruction(uint8_t op);
+bool relative_instruction(char * op, uint8_t * out);
+
 typedef uint16_t addr_t;
 typedef uint8_t  data_t;
 

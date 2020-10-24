@@ -82,11 +82,10 @@ for addr in lengths:
 		print("\tcase 0x%s:" % o.codepoint)
 	print("\t\treturn 1;\n\tdefault:\t\treturn 0;")
 	print("\t}\n}")
-	print("uint8_t %s_instruction(char * op) {" % mode)
+	print("bool %s_instruction(char * op, uint8_t * out) {" % mode)
 	for o in [o for o in opcodes if o.mode == addr]:
-		print("\tif(!strncmp(op, \"%s\", %u)) return 0x%s;" % (o.mnemonic, len(o.mnemonic), o.codepoint))
-	print("\tfprintf(stderr, \"No %s addressing mode for instruction \\\"%%s\\\"\\n\", op);" % addr)
-	print("\texit(1);")
+		print("\tif(!strncmp(op, \"%s\", %u)) { *out = 0x%s; return true; }" % (o.mnemonic, len(o.mnemonic), o.codepoint))
+	print("\treturn 0;")
 	print("}")
 
 for o in list(set([o.mnemonic for o in opcodes])):
