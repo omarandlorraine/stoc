@@ -122,4 +122,5 @@ next_instruction:
 	return;
 error:
 	printf("What does this line mean: %s\n", line);
+	exit(1);
 }
