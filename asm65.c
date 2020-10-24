@@ -12,24 +12,37 @@
 extern int org;
 extern rewrite_t r_reference;
 
-uint8_t parse_operand(char * val) {
-    int value;
-    if(val[0] == '$') {
-        char * end = NULL;
-        value = strtol(val + 1, &end, 16);
-        if(strcmp(end, "\n")) {
-            fprintf(stderr, "Cannot parse hexadecimal value %s\n", val);
-            exit(2);
-        }
-    } else {
-        char * end = NULL;
-        value = strtol(val, &end, 10);
-        if(strcmp(end, "\n")) {
-            fprintf(stderr, "Cannot parse decimal value %s\n", val);
-            exit(2);
-        }
-    }
-    return value;
+bool parse_decimal(char * val, uint16_t * out) {
+	char * end = NULL;
+    int value = strtol(val, &end, 10);
+	*out = value;
+	return !strcmp(end, "\n");
+}
+
+bool parse_hexadecimal(char * val, uint16_t * out) {
+	if(val[0] != '$') return false;
+	char * end = NULL;
+    int value = strtol(val + 1, &end, 16);
+	*out = value;
+	return !strcmp(end, "\n");
+}
+
+bool parse_operand_absolute(char * operand, uint16_t * out) {
+	if(getlbl(operand, out)) return 1;
+	return 0;
+}
+
+bool parse_operand_immediate(char * operand, uint16_t * out) {
+	if(!operand)
+		return 0;
+	if(operand[0] != '#') {
+		printf("\"%s\" is not immediate\n", operand);
+		return 0;
+	}
+	operand++;
+	if(parse_hexadecimal(operand, out)) return 1;
+	if(parse_decimal(operand, out)) return 1;
+	return 0;
 }
 
 void assemble(char * file) {
@@ -72,6 +85,8 @@ void assemble(char * file) {
 			if(!instr) continue;
 			instr++;
 			char * operand = strstr(instr, "\t");
+			uint16_t * moperand = &r_reference.instructions[rewrite_offset].operand;
+			uint8_t * mopcode = &r_reference.instructions[rewrite_offset].opcode;
 			if(operand) {
 				operand[0] = '\0';
 				operand++;
@@ -84,38 +99,29 @@ void assemble(char * file) {
 				reg_in(operand);
 				continue;
 			}
-			else if(!operand) {
-				// this line has no operand, therefore the addressing mode must be "implied"
-				r_reference.instructions[rewrite_offset].opcode = implied_instruction(instr);
-				address++;
-			} else if(operand[0] == '#') {
-				// this line has the addressing mode "immediate"
-				r_reference.instructions[rewrite_offset].opcode = immediate_instruction(instr);
-				r_reference.instructions[rewrite_offset].operand = parse_operand(operand + 1);
-				address += 2;
-			} else if(operand[0] == '(' && strstr(operand, "),y")) {
-				operand++;
-				r_reference.instructions[rewrite_offset].opcode = indirect_y_instruction(instr);
-				strstr(operand, "),y")[0] = '\0';
-				if(!getlbl(operand + 1, &r_reference.instructions[rewrite_offset].operand)) {
-					fprintf(stderr, "No such label as %s\ndouble check line %u\n", operand, linenumber);
-					exit(1);
-				}
-			} else if(operand[0] == '(' && strstr(operand, ",x)")) {
-				operand++;
-				r_reference.instructions[rewrite_offset].opcode = indirect_x_instruction(instr);
-				strstr(operand, ",x)")[0] = '\0';
-				if(!getlbl(operand + 1, &r_reference.instructions[rewrite_offset].operand)) {
-					fprintf(stderr, "No such label as %s\ndouble check line %u\n", operand, linenumber);
-					exit(1);
-				}
+			else if(parse_operand_absolute(operand, moperand)) {
+				if(zero_page_instruction(instr, mopcode) && *moperand < 256) goto next_instruction;
+				if(absolute_instruction(instr, mopcode)) goto next_instruction;
+				if(relative_instruction(instr, mopcode)) goto next_instruction;
+				goto error;
 			}
+			else if(parse_operand_immediate(operand, moperand)) {
+				if(immediate_instruction(instr, mopcode)) goto next_instruction;
+			}
+			else if(!operand) {
+				if(implied_instruction(instr, mopcode)) goto next_instruction;
+			}
+			goto error;
+next_instruction:
 			rewrite_offset++;
 			r_reference.length = rewrite_offset;
-			//printf("%s\n", line);
 		}
 		rewind(filePointer);
 	}
+	
 
 	fclose(filePointer);
+	return;
+error:
+	printf("What does this line mean: %s\n", line);
 }
