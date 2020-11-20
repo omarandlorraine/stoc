@@ -153,7 +153,6 @@ int immediate(char * line) {
 	if(!read_immediate_operand(&line)) return 0;
 	if(!end_line(&line)) return 0;
 	if(!parse_operand_immediate()) return 0;
-	printf("operand %02x\n", moperand);
 	if(immediate_instruction(opcode, &mopcode)) return 1;
 	return 0;
 }
@@ -228,7 +227,6 @@ void assemble(char * file) {
 			goto error;
 	
 next_instruction:
-			printf("%02x %04x\n", mopcode, moperand);
 			reference.program.instructions[rewrite_offset].operand = moperand;
 			reference.program.instructions[rewrite_offset].opcode = mopcode;
 			rewrite_offset++;
