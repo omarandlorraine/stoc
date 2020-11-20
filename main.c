@@ -1,5 +1,4 @@
 #include "stoc.h"
-#include "emulators/fake6502.h"
 #include "labels.h"
 #include "asm65.h"
 #include "reg.h"
@@ -16,48 +15,31 @@
 
 int org = 0;
 
-rewrite_t r_reference;
-rewrite_t r_rewrite;
-rewrite_t r_proposal;
+context_t reference;
+context_t rewrite;
+context_t proposal;
 
-Context65 reference;
-Context65 rewrite;
-Context65 proposal;
-
-uint8_t reference_mem[65536];
-uint8_t rewrite_mem[65536];
-uint8_t proposal_mem[65536];
-
-uint8_t read6502(Context65 * c, uint16_t address) {
-	if(c == &reference) return reference_mem[address];
-	if(c == &rewrite)   return rewrite_mem[address];
-	if(c == &proposal)  return proposal_mem[address];
-	fprintf(stderr, "Unknown Context65; exiting\n");
-	exit(1);
+uint8_t mem_read(context_t * c, uint16_t address) {
+	return c->mem[address];
 }
 
-void write6502(Context65 * c, uint16_t address, uint8_t val) {
-	if(c == &reference) reference_mem[address] = val;
-	else if(c == &rewrite)   rewrite_mem[address] = val;
-	else if(c == &proposal)  proposal_mem[address] = val;
-	else {
-		fprintf(stderr, "Unknown Context65; exiting\n");
-		exit(1);
-	}
+void mem_write(context_t * c, uint16_t address, uint8_t val) {
+	c->mem[address] = val;
 }
 
-void hexdump(rewrite_t * r) {
-	printf("; %d instructions\n", r->length);
-	for(int i = 0; i < r->length; i++) {
-		uint8_t instr = r->instructions[i].opcode;
+void hexdump(context_t * c) {
+	rewrite_t r = c->program;
+	printf("; %d instructions\n", r.length);
+	for(int i = 0; i < r.length; i++) {
+		uint8_t instr = r.instructions[i].opcode;
 		if(is_implied_instruction(instr)) {
 			fprintf(stderr, "\t%s\n", opnames[instr]);
 		} else if(is_immediate_instruction(instr)) {
-			fprintf(stderr, "\t%s #$%02x\n", opnames[instr], r->instructions[i].operand & 0x00ff);
+			fprintf(stderr, "\t%s #$%02x\n", opnames[instr], r.instructions[i].operand & 0x00ff);
 		} else {
 			fprintf(stderr, "\t$%02x", instr);
-			if(opcode_length(instr) > 1) fprintf(stderr, " $%02x", r->instructions[i].operand & 0x00ff);
-			if(opcode_length(instr) > 2) fprintf(stderr, " $%02x", r->instructions[i].operand >> 8);
+			if(opcode_length(instr) > 1) fprintf(stderr, " $%02x", r.instructions[i].operand & 0x00ff);
+			if(opcode_length(instr) > 2) fprintf(stderr, " $%02x", r.instructions[i].operand >> 8);
 			fprintf(stderr, "\n");
 		}
 	}
@@ -99,6 +81,9 @@ void parseoption(char * opt) {
 	char * value = colon + 1;
 	if(!strncmp("--org:", tmp, 6)) {
 		org = strtol(value, NULL, 16);
+		reference.program.org = org;
+		rewrite.program.org = org;
+		proposal.program.org = org;
 		return;
 	}
     if(!strncmp("--assemble:", tmp, 11)) {
@@ -114,7 +99,7 @@ void parseoption(char * opt) {
         return;
     }
 	if(!strcmp("--hexdump", tmp)) {
-		hexdump(&r_reference);
+		hexdump(&reference);
 		return;
 	}
 	if(!strncmp("--jobs:", tmp, 7)) {
@@ -122,7 +107,7 @@ void parseoption(char * opt) {
 		return;
 	}
 	if(!strcmp("--exh", tmp)) {
-		exhaustive(&r_reference, &r_rewrite);
+		exhaustive(&reference, &rewrite);
 		return;
 	}
 

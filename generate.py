@@ -22,20 +22,6 @@ lengths = {
         "relative": 2,
         "accumulator": 1}
 
-read_instrs = ["asl", "ror" ]
-
-branches = {
-        "bne": "!(c.status & ZEROFLAG)",
-        "beq":   "c.status & ZEROFLAG",
-        "bvc": "!(c.status & OVERFLOWFLAG)",
-        "bvs":   "c.status & OVERFLOWFLAG",
-        "bmi": "!(c.status & SIGNFLAG)",
-        "bpl":   "c.status & SIGNFLAG",
-        "bcc": "!(c.status & CARRYFLAG)",
-        "bcs":   "c.status & CARRYFLAG",
-        "bra": "1"
-        }
-
 for line in sys.stdin:
     fields = line.split("\t")
     codepoint = fields[0].strip()
@@ -44,10 +30,12 @@ for line in sys.stdin:
     opc = Opcode(codepoint, mnemonic, mode)
     opcodes.append(opc)
 
+print("#define M6502")
 print("#include \"stoc.h\"")
 print("#include <string.h>")
 print("#include <stdio.h>")
 print("#include <stdlib.h>")
+
 # opcode_legal_p
 print("\n\nbool opcode_legal_p(uint8_t op) {")
 print("\tswitch(op) {")
@@ -88,19 +76,7 @@ for addr in lengths:
 	print("\treturn 0;")
 	print("}")
 
-for o in list(set([o.mnemonic for o in opcodes])):
-	print("extern void %s(Context65 * c);" % o)
 
-
-print("void (*optable[256])(Context65 * c) = {")
-for i in range(256):
-	o = [o.mnemonic for o in opcodes if int(o.codepoint, 16) == i]
-	if len(o):
-		op = o[0]
-		print("\t%s, // %02x" % (o[0], i))
-	else:
-		print("\tNULL, // %02x" % i)
-print("};")
 print("char *opnames[256] = {")
 for i in range(256):
 	o = [o.mnemonic for o in opcodes if int(o.codepoint, 16) == i]

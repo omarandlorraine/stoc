@@ -3,16 +3,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "labels.h"
+#include "stoc.h"
 #define MAXLABELS 32
-#define MAXLABELLEN 20
 
-char labels[MAXLABELS][MAXLABELLEN + 1];
+char labels[MAXLABELS][LABEL_LEN + 1];
 uint16_t addresses[MAXLABELS];
 static int labnum = 0;
 
 void mklbli(char * key, uint16_t value) {
-	if(strlen(key) > MAXLABELLEN) {
-		fprintf(stderr, "Cannot label %s; the identifier is too long. Maximum length is %d chars\n", key, MAXLABELLEN);
+	if(strlen(key) > LABEL_LEN) {
+		fprintf(stderr, "Cannot label %s; the identifier is too long. Maximum length is %d chars\n", key, LABEL_LEN);
 		exit(2);
 	}
 

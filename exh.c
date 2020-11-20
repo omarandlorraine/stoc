@@ -30,50 +30,62 @@
 
 void iterate(rewrite_t * rewrite, int offs) {
 	if(rewrite->length < offs + 1) rewrite->length = offs + 1;
-	// TODO: iterate across operands first.
-	uint8_t old_insn = rewrite->instructions[offs].opcode;
+
+	instruction_t * instruction = &rewrite->instructions[offs];
+
+	if(!++instruction->operand)
+		goto next_opcode;
+
+	uint8_t old_insn = instruction->opcode;
 
 	if(is_zero_page_instruction(old_insn) || is_zero_page_x_instruction(old_insn) || is_zero_page_y_instruction(old_insn)) {
-		// Scan across the defined zero-page locations.
-		while(rewrite->instructions[offs].operand < 256) {
-			rewrite->instructions[offs].operand++;
-			if(label_valid(rewrite->instructions[offs].operand)) return;
-			// else, we have exhausted the defined ZP locations
-			//    and so we need to try the next instruction instead.
+		for(;;) {
+			if(instruction->operand > 255)
+				goto next_opcode;
+			if(label_valid(instruction->operand))
+				return;
+			instruction->operand++;
 		}
 	}
 	else if(is_immediate_instruction(old_insn)) {
-		if(rewrite->instructions[offs].operand < 255) {
-			rewrite->instructions[offs].operand++;
+		if(instruction->operand < 255)
+			return;
+	}
+	else if(is_implied_instruction(old_insn)) {
+		if(instruction->operand == 0) {
 			return;
 		}
+		goto next_opcode;
 	}
 	// TODO: absolute
 	// TODO: absolute-x
 	// TODO: absolute-y
 	// TODO: relative
 	// TODO: indirect
-	do {
-		if(rewrite->instructions[offs].opcode == 255) iterate(rewrite, offs + 1);
-		rewrite->instructions[offs].opcode++;
-		rewrite->instructions[offs].operand = 0;
-	} while(!valid_opcode(rewrite->instructions[offs].opcode));
-	iterate(rewrite, offs);
+next_opcode:
+	instruction->operand = 0;
+	if(!++instruction->opcode)
+		iterate(rewrite, offs + 1);
+	if(!opcode_legal_p(instruction->opcode))
+		goto next_opcode;
 }
 
-void exhaustive(rewrite_t * reference, rewrite_t * rewrite) {
+void exhaustive(context_t * reference, context_t * rewrite) {
 
 	if(!equivalence(reference, reference)) {
 		printf("reference is not equivalent to itself\n");
 		exit(1);
 	}
+	init_program(&(rewrite->program));
+	int oldlen = rewrite->program.length;
 
-	rewrite->length = 1;
-	rewrite->instructions[0].opcode = 0;
-	iterate(rewrite, 0);
+	iterate(&rewrite->program, 0);
 
 	while(!equivalence(reference, rewrite)) {
-		iterate(rewrite, 0);
+		if(oldlen != rewrite->program.length) {
+			oldlen = rewrite->program.length;
+		}
+		iterate(&rewrite->program, 0);
 	}
 	hexdump(rewrite);
 }

@@ -3,4 +3,4 @@
 	txa
 	pha
 	pla
-	live-out-registers	xy
+	liveoutregisters	xy

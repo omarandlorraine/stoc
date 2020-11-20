@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include "stoc.h"
 #include "reg.h"
-#include "emulators/fake6502.h"
 
 #define REG_A 0x01
 #define REG_X 0x02
@@ -19,14 +18,14 @@
 uint8_t live_in = 0;
 uint8_t live_out = 0;
 
-int reg_cmp(Context65 * a, Context65 * b, uint8_t live) {
+int reg_cmp(context_t * a, context_t * b, uint8_t live) {
 	if((live & REG_A) && (a->a != b->a)) return 1;
 	if((live & REG_X) && (a->x != b->x)) return 1;
 	if((live & REG_Y) && (a->y != b->y)) return 1;
 	return 0;
 }
 
-void reg_rand(Context65 * c, uint8_t live) {
+void reg_rand(context_t * c, uint8_t live) {
 	if(live & REG_A) c->a = rand();
 	if(live & REG_X) c->x = rand();
 	if(live & REG_Y) c->y = rand();
@@ -59,14 +58,14 @@ void reg_in(char * s) {
 	}
 }
 
-void reg_rand_in(Context65 * c) {
+void reg_rand_in(context_t * c) {
 	reg_rand(c, live_in);
 }
 
-void reg_rand_out(Context65 * c) {
+void reg_rand_out(context_t * c) {
 	reg_rand(c, live_in | live_out);
 }
 
-int reg_cmp_out(Context65 * a, Context65 * b) {
+int reg_cmp_out(context_t * a, context_t * b) {
 	return reg_cmp(a, b, live_out);
 }

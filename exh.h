@@ -1,1 +1,1 @@
-void exhaustive(rewrite_t * reference, rewrite_t * rewrite);
+void exhaustive(context_t * reference, context_t * rewrite);

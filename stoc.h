@@ -3,6 +3,8 @@
 #include <inttypes.h>
 
 #define REWRITE_LEN 50
+#define LABEL_LEN   20
+#define DATA_LEN    20
 
 bool opcode_legal_p(uint8_t op);
 int opcode_length(uint8_t op);
@@ -28,11 +30,13 @@ bool relative_instruction(char * op, uint8_t * out);
 
 typedef uint16_t addr_t;
 typedef uint8_t  data_t;
+#define ADDR_SPACE 0xffff
 
 typedef struct i1 {
-	uint8_t opcode;
 	addr_t address;
-	uint16_t operand;
+	uint8_t opcode;
+	int target;
+	int operand;
 } instruction_t;
 
 typedef struct r1 {
@@ -42,14 +46,22 @@ typedef struct r1 {
 	instruction_t instructions[REWRITE_LEN];
 } rewrite_t;
 
-typedef struct c65 {
-    uint8_t a, x, y, status, sp, opcode;
-    uint16_t pc, ea;
-    int penaltyaddr;
-    int penaltyop;
+typedef struct c1 {
+	uint8_t a;
+	uint8_t x;
+	uint8_t y;
+	uint8_t flags;
+	uint8_t s;
+	uint16_t pc;
     int clockticks;
-    uint8_t mem[65536];
-} Context65;
+    rewrite_t program;
+	data_t mem[ADDR_SPACE];
+	uint8_t memf[ADDR_SPACE];
+	uint16_t ea;
+	uint8_t opcode;
+} context_t;
 
-void (*optable[256])(Context65 * c);
+void init_program(rewrite_t * r);
+void install_program(rewrite_t * r);
+extern void (*optable[256])(context_t * c);
 char *opnames[256];
