@@ -2,7 +2,7 @@ CC=clang
 CFLAGS=-g -Werror -pedantic
 ALL_MACHINES = stoc-6502 stoc-2a03 stoc-6510 
 BUILD_DIR := build/
-SOURCES = tests.c exh.c labels.c asm65.c reg.c main.c instr.c
+SOURCES = tests.c exh.c labels.c asm65.c reg.c main.c instr.c stoc.c
 GENERATED = gen-6502.c gen-6510.c gen-65c02.c gen-2a03.c
 GENOBJECTS = $(GENERATED:%.c=$(BUILD_DIR)%.o)
 OBJECTS = $(SOURCES:%.c=$(BUILD_DIR)%.o)
@@ -24,17 +24,13 @@ clean:
 	rm -r build
 
 # Emulators to run code-sequences on.
-$(BUILD_DIR)emu-6502.o: emulators/fake6502.c emulators/fake6502.h
+$(BUILD_DIR)emu-6510.o $(BUILD_DIR)emu-6502.o: emulator.c
 	mkdir -p $(BUILD_DIR)
-	$(CC) -c $(CFLAGS) emulators/fake6502.c -o $@
+	$(CC) -c $(CFLAGS) emulator.c -o $@
 
-$(BUILD_DIR)emu-2a03.o: emulators/fake6502.c emulators/fake6502.h
+$(BUILD_DIR)emu-2a03.o: emulator.c
 	mkdir -p $(BUILD_DIR)
-	$(CC) -c $(CFLAGS) emulators/fake6502.c -D NESCPU -o $@
-
-$(BUILD_DIR)emu-6510.o: emulators/fake6502.c emulators/fake6502.h
-	mkdir -p $(BUILD_DIR)
-	$(CC) -c $(CFLAGS) emulators/fake6502.c -D UNDOCUMENTED -o $@
+	$(CC) -c $(CFLAGS) emulator.c -o $@
 
 # Source file per target, generated at compile-time
 gen-6502.c gen-2a03.c: generate.py

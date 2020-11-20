@@ -1,5 +1,4 @@
 #include "stoc.h"
-#include "emulators/fake6502.h"
 #include "labels.h"
 #include "asm65.h"
 #include <stdio.h>
@@ -10,7 +9,25 @@
 #define ASMBUFLEN 255
 
 extern int org;
-extern rewrite_t r_reference;
+extern context_t reference;
+
+char label[ASMBUFLEN] = {0};
+char opcode[ASMBUFLEN] = {0};
+char operand[ASMBUFLEN] = {0};
+uint8_t mopcode;
+uint16_t moperand;
+
+bool alpha(char c) {
+	if(c < 'a') return false;
+	if(c > 'z') return false;
+	return true;
+}
+
+bool whitespace(char c) {
+	if(c == ' ') return true;
+	if(c == '\t') return true;
+	return false;
+}
 
 bool parse_decimal(char * val, uint16_t * out) {
 	char * end = NULL;
@@ -27,20 +44,150 @@ bool parse_hexadecimal(char * val, uint16_t * out) {
 	return !strcmp(end, "\n");
 }
 
+bool parse_operand_zeropage(char * operand, uint16_t * out) {
+	if(parse_hexadecimal(operand, out) && *out < 256) return 1;
+	if(parse_decimal(operand, out) && *out < 256) return 1;
+	if(getlbl(operand, out) && *out < 256) return 1;
+	return 0;
+}
+
 bool parse_operand_absolute(char * operand, uint16_t * out) {
 	if(getlbl(operand, out)) return 1;
 	return 0;
 }
 
-bool parse_operand_immediate(char * operand, uint16_t * out) {
-	if(!operand)
+bool parse_operand_immediate() {
+	char * op = operand;
+	if(!op) {
 		return 0;
-	if(operand[0] != '#')
+	}
+	if(op[0] != '#') {
 		return 0;
-	operand++;
-	if(parse_hexadecimal(operand, out)) return 1;
-	if(parse_decimal(operand, out)) return 1;
+	}
+	op++;
+	if(parse_hexadecimal(op, &moperand)) return 1;
+	if(parse_decimal(op, &moperand)) return 1;
 	return 0;
+}
+
+int swallow_whitespace(char ** c) {
+	if(!whitespace(**c))
+		return 0;
+	while(whitespace(**c)) {
+		++*c;
+	}
+	return 1;
+}
+
+int begin_line(char ** c) {
+	char * dst = label;
+	while(!whitespace(**c)) {
+		*dst++ = **c;
+		++*c;
+	}
+	while(whitespace(**c))
+		++*c;
+	return 1;
+}
+
+int read_opcode(char ** c) {
+	char * dst = opcode;
+	while(!whitespace(**c)) {
+		if(!**c) return strlen(opcode);
+		*dst++ = **c;
+		++*c;
+	}
+	return swallow_whitespace(c);
+}
+
+int read_immediate_operand(char ** c) {
+	char * dst = operand;
+	while(!alpha(**c)) {
+		if(!**c) return strlen(operand);
+		*dst++ = **c;
+		++*c;
+	}
+	return 1;
+}
+
+int read_alpha(char ** c) {
+	char * dst = operand;
+	while(alpha(**c)) {
+		if(!**c) return strlen(operand);
+		*dst++ = **c;
+		*dst = '\0';
+		++*c;
+	}
+	return 1;
+}
+
+int end_line(char ** c) {
+	while(whitespace(**c)) {
+		++*c;
+	}
+	if(**c == '\n') return 1;
+	if(!**c) return 1;
+	return 0;
+}
+
+int directive(char * line) {
+	if(!begin_line(&line)) return 0;
+	if(!read_opcode(&line)) return 0;
+	if(!read_alpha(&line)) return 0;
+	if(!end_line(&line)) return 0;
+
+	if(!strcmp(opcode, "liveoutregisters")) {
+		reg_out(operand);
+		return 1;
+	}
+	else if(!strcmp(opcode, "liveinregisters")) {
+		reg_in(operand);
+		return 1;
+	}
+	return 0;
+}
+
+int immediate(char * line) {
+	if(!begin_line(&line)) return 0;
+	if(!read_opcode(&line)) return 0;
+	if(!read_immediate_operand(&line)) return 0;
+	if(!end_line(&line)) return 0;
+	if(!parse_operand_immediate()) return 0;
+	printf("operand %02x\n", moperand);
+	if(immediate_instruction(opcode, &mopcode)) return 1;
+	return 0;
+}
+
+int relative(char * line) {
+	if(!begin_line(&line)) return 0;
+	if(!read_opcode(&line)) return 0;
+	if(!read_alpha(&line)) return 0;
+	if(!end_line(&line)) return 0;
+	return relative_instruction(opcode, &mopcode);
+}
+
+static int zeropage(char * line) {
+	if(!begin_line(&line)) return 0;
+	if(!read_opcode(&line)) return 0;
+	if(!read_alpha(&line)) return 0;
+	if(!end_line(&line)) return 0;
+	return zero_page_instruction(opcode, &mopcode);
+}
+
+int implied(char * line) {
+	if(!begin_line(&line)) return 0;
+	if(!read_opcode(&line)) return 0;
+	if(!end_line(&line)) return 0;
+	if(implied_instruction(opcode, &mopcode)) return 1;
+	return 0;
+}
+
+int absolute(char * line) {
+	if(!begin_line(&line)) return 0;
+	if(!read_opcode(&line)) return 0;
+	if(!read_alpha(&line)) return 0;
+	if(!end_line(&line)) return 0;
+	return absolute_instruction(opcode, &mopcode);
 }
 
 void assemble(char * file) {
@@ -48,11 +195,7 @@ void assemble(char * file) {
 	uint16_t address = org;
 
 	FILE* filePointer;
-	char label[ASMBUFLEN];
 	char line[ASMBUFLEN];
-	char opcode[ASMBUFLEN];
-	char operand[ASMBUFLEN];
-
 
 	filePointer = fopen(file, "r");
 	if(!filePointer) {
@@ -69,50 +212,27 @@ void assemble(char * file) {
 		int rewrite_offset = 0;
 		linenumber = 0;
 		while(fgets(line, ASMBUFLEN, filePointer)) {
-			//fprintf(stderr, line);
 			linenumber++;
+			label[0] = '\0';
+			opcode[0] = '\0';
+			operand[0] = '\0';
 
-			char * instr = strstr(line, "\t");
+			if(directive(line)) continue;
 
-			char * colon = strstr(line, ":");
-			if(colon && !pass) {
-				colon[0] = '\0';
-				mklbli(line, address);
-			}
-
-			if(!instr) continue;
-			instr++;
-			char * operand = strstr(instr, "\t");
-			uint16_t * moperand = &r_reference.instructions[rewrite_offset].operand;
-			uint8_t * mopcode = &r_reference.instructions[rewrite_offset].opcode;
-			if(operand) {
-				operand[0] = '\0';
-				operand++;
-			}
-			if(!strcmp(instr, "live-out-registers")) {
-				reg_out(operand);
-				continue;
-			}
-			else if(!strcmp(instr, "live-in-registers")) {
-				reg_in(operand);
-				continue;
-			}
-			else if(parse_operand_absolute(operand, moperand)) {
-				if(zero_page_instruction(instr, mopcode) && *moperand < 256) goto next_instruction;
-				if(absolute_instruction(instr, mopcode)) goto next_instruction;
-				if(relative_instruction(instr, mopcode)) goto next_instruction;
-				goto error;
-			}
-			else if(parse_operand_immediate(operand, moperand)) {
-				if(immediate_instruction(instr, mopcode)) goto next_instruction;
-			}
-			else if(!operand) {
-				if(implied_instruction(instr, mopcode)) goto next_instruction;
-			}
+			if(implied(line))   goto next_instruction;
+			if(immediate(line)) goto next_instruction;
+			if(zeropage(line))  goto next_instruction;
+			if(relative(line))  goto next_instruction;
+			if(absolute(line))  goto next_instruction;
+		
 			goto error;
+	
 next_instruction:
+			printf("%02x %04x\n", mopcode, moperand);
+			reference.program.instructions[rewrite_offset].operand = moperand;
+			reference.program.instructions[rewrite_offset].opcode = mopcode;
 			rewrite_offset++;
-			r_reference.length = rewrite_offset;
+			reference.program.length = rewrite_offset;
 		}
 		rewind(filePointer);
 	}
@@ -121,6 +241,7 @@ next_instruction:
 	fclose(filePointer);
 	return;
 error:
-	printf("What does this line mean: %s\n", line);
+	printf("Error on line %d\nlabel = \"%s\"\nopcode = \"%s\"\noperand = \"%s\"\n", linenumber, label, opcode, operand);
+	printf("What does this line mean: %s %s\nline %d\n", line, operand, linenumber);
 	exit(1);
 }
