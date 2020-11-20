@@ -1,4 +1,4 @@
-	lda	#$80
+	lda   	#$80
 	lsr
 	lsr
 	lsr
@@ -6,4 +6,4 @@
 	lsr
 	lsr
 	lsr
-	live-out-registers	a
+	liveoutregisters	   a
