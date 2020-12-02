@@ -95,6 +95,7 @@ int read_opcode(char ** c) {
 	while(!whitespace(**c)) {
 		if(!**c) return strlen(opcode);
 		*dst++ = **c;
+		*dst = '\0';
 		++*c;
 	}
 	return swallow_whitespace(c);
