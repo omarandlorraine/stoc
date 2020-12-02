@@ -72,7 +72,7 @@ next_opcode:
 
 void exhaustive(context_t * reference, context_t * rewrite) {
 
-	if(!equivalence(reference, reference)) {
+	if(!equivalence(reference, reference, 0)) {
 		printf("reference is not equivalent to itself\n");
 		exit(1);
 	}
@@ -81,7 +81,7 @@ void exhaustive(context_t * reference, context_t * rewrite) {
 
 	iterate(&rewrite->program, 0);
 
-	while(!equivalence(reference, rewrite)) {
+	while(!equivalence(reference, rewrite, 0)) {
 		if(oldlen != rewrite->program.length) {
 			oldlen = rewrite->program.length;
 		}

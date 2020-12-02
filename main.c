@@ -36,6 +36,8 @@ void hexdump(context_t * c) {
 			fprintf(stderr, "\t%s\n", opnames[instr]);
 		} else if(is_immediate_instruction(instr)) {
 			fprintf(stderr, "\t%s #$%02x\n", opnames[instr], r.instructions[i].operand & 0x00ff);
+		} else if(is_zero_page_instruction(instr)) {
+			fprintf(stderr, "\t%s $%02x\n", opnames[instr], r.instructions[i].operand & 0x00ff);
 		} else {
 			fprintf(stderr, "\t$%02x", instr);
 			if(opcode_length(instr) > 1) fprintf(stderr, " $%02x", r.instructions[i].operand & 0x00ff);
@@ -88,6 +90,16 @@ void parseoption(char * opt) {
 	}
     if(!strncmp("--assemble:", tmp, 11)) {
         assemble(tmp + 11);
+        return;
+    }
+    if(!strncmp("--eq:", tmp, 5)) {
+		rewrite = reference;
+		hexdump(&reference);
+        assemble(tmp + 5);
+		hexdump(&reference);
+		equivalence(&rewrite, &reference, 10);
+		hexdump(&rewrite);
+		hexdump(&reference);
         return;
     }
     if(!strncmp("--reg-out:", tmp, 10)) {

@@ -34,14 +34,25 @@ int run(context_t * c) {
 	return TOOK_TOO_LONG;
 }
 
-int equivalence(context_t * reference, context_t * rewrite) {
+int equivalence(context_t * reference, context_t * rewrite, int log) {
+	if(log) {
+		printf("equivalence tester called\n");
+	}
 	install(reference);
 	install(rewrite);
 	for(int i = 0; i < MAXITER; i++) {
+		uint8_t a = rand();
+		uint8_t x = rand();
+		uint8_t y = rand();
+		
 		reg_rand_in(reference);
 		reg_rand_out(reference);
 		reg_rand_in(rewrite);
 		reg_rand_out(rewrite);
+		rewrite->a = reference->a = a;
+		rewrite->x = reference->x = x;
+		rewrite->y = reference->y = y;
+
 		int code = run(rewrite);
 		if(code) {
 			return 0;
@@ -51,6 +62,9 @@ int equivalence(context_t * reference, context_t * rewrite) {
 			return 0;
 		}
 		if(reg_cmp_out(reference, rewrite)) {
+			if(log--) {
+				printf("a = %02x, x = %02x, y = %02x\n", a, x, y);
+			}
 			return 0;
 		}
 	}
