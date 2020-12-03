@@ -41,6 +41,7 @@ int equivalence(context_t * reference, context_t * rewrite, int log) {
 		uint8_t a = rand();
 		uint8_t x = rand();
 		uint8_t y = rand();
+		uint8_t f = rand();
 		
 		reg_rand_in(reference);
 		reg_rand_out(reference);
@@ -49,6 +50,7 @@ int equivalence(context_t * reference, context_t * rewrite, int log) {
 		rewrite->a = reference->a = a;
 		rewrite->x = reference->x = x;
 		rewrite->y = reference->y = y;
+		rewrite->flags = reference->flags = f;
 
 		int code = run(rewrite);
 		if(code) {
