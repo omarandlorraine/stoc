@@ -2,4 +2,4 @@
 	txa
 	pha
 	pla
-	live-out-registers	ax
+	liveoutregisters	ax
