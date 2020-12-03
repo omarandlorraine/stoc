@@ -1,6 +1,6 @@
 	clc
-	lda #$02
+	lda #$07
 	cld
 	clc
-	adc #$02
+	adc #$09
 	liveoutregisters a
