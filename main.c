@@ -94,10 +94,12 @@ void parseoption(char * opt) {
     }
     if(!strncmp("--eq:", tmp, 5)) {
 		rewrite = reference;
-		hexdump(&reference);
         assemble(tmp + 5);
-		hexdump(&reference);
-		equivalence(&rewrite, &reference, 10);
+		if(equivalence(&rewrite, &reference, 10)) {
+			printf("The two programs seem to behave identically.\n");
+		} else {
+			printf("The two programs are not equivalent.\nAbove is a list of example inputs that give rise to differing outputs.\n");
+		}
 		hexdump(&rewrite);
 		hexdump(&reference);
         return;

@@ -35,9 +35,6 @@ int run(context_t * c) {
 }
 
 int equivalence(context_t * reference, context_t * rewrite, int log) {
-	if(log) {
-		printf("equivalence tester called\n");
-	}
 	install(reference);
 	install(rewrite);
 	for(int i = 0; i < MAXITER; i++) {
@@ -64,8 +61,9 @@ int equivalence(context_t * reference, context_t * rewrite, int log) {
 		if(reg_cmp_out(reference, rewrite)) {
 			if(log--) {
 				printf("a = %02x, x = %02x, y = %02x\n", a, x, y);
+			} else {
+				return 0;
 			}
-			return 0;
 		}
 	}
 	return 1;
