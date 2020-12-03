@@ -98,7 +98,7 @@ void parseoption(char * opt) {
 		if(equivalence(&rewrite, &reference, 10)) {
 			printf("The two programs seem to behave identically.\n");
 		} else {
-			printf("The two programs are not equivalent.\nAbove is a list of example inputs that give rise to differing outputs.\n");
+			printf("The two programs are not equivalent.\nAbove is a list of example inputs that give rise to differing behaviours.\n");
 		}
 		hexdump(&rewrite);
 		hexdump(&reference);
