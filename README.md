@@ -35,6 +35,25 @@ I should think that we could narrow the search space down a bit in some ways:
  - consider only the commonest immediate values (This is what the GNU Superoptimiser does)
  - Not considering any code sequence which cannot occur in an optimal program (these might do daft things like `ldx #$01, dex` instead of `ldx #$00`. This would cull the search space by effectively being a peephole optimiser. I think this is what Henry Massalin did.
 
+### Dead Code Elimination
+This search strategy looks for a more optimal rewrite by selecting random instructions for deletion; upto five at a time. If the program proves to be equivalent without the selected instructions, then the instructions are deleted and the same procedure is done again. Use this procedure by first loading a program and then using the `--dce` command line argument.
+
+```
+$ ./stoc-2a03 --org:0200 examples/test5.asm --hexdump --dce
+; 5 instructions
+	clc
+	lda #$02
+	cld
+	clc
+	adc #$02
+
+; 3 instructions
+	clc
+	lda #$02
+	adc #$02
+
+```
+
 ### Equivalence testing
 The way I'm currently testing two programs for equivalence is by running them a squillion times, each time with a random input. This means that the registers and memory locations read by the program are set to random values. Then the two programs are run. The output of the program is checked by looking in the live-out registers and live-out memory locations. If for the same input, the programs produce different output, then of course the programs are found to not be equivalent. Otherwise, the equivalence test passes. 
 
