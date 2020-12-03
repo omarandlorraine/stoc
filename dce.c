@@ -36,8 +36,8 @@ void deadcodeelim(context_t * reference) {
 			if(!proposal.program.length) break;
 			if(equivalence(&rewrite, &proposal, 0)) {
 				rewrite = proposal;
-				hexdump(&rewrite);
 			}
 		}
 	}
+	hexdump(&rewrite);
 }
