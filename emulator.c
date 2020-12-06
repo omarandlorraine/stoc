@@ -298,11 +298,11 @@ void adc(context_t * c) {
     if (c->flags & FLAG_DECIMAL) {
         clearcarry(c);
         
-        if ((c->a & 0x0F) > 0x09) {
-            c->a += 0x06;
+        if ((result & 0x0F) > 0x09) {
+            result += 0x06;
         }
-        if ((c->a & 0xF0) > 0x90) {
-            c->a += 0x60;
+        if ((result & 0xF0) > 0x90) {
+            result += 0x60;
             setcarry(c);
         }
         
