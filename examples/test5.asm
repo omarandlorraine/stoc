@@ -1,6 +1,6 @@
 	clc
 	lda #$07
-	cld
+	sed
 	clc
-	adc #$09
+	adc #$05
 	liveoutregisters a
