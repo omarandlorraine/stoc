@@ -42,19 +42,19 @@ This search strategy looks for a more optimal rewrite by selecting random instru
 $ ./stoc-2a03 --org:0200 examples/test5.asm --hexdump --dce
 ; 5 instructions
 	clc
-	lda #$02
-	cld
+	lda #$07
+	sed
 	clc
-	adc #$02
+	adc #$04
 
 ; 3 instructions
 	clc
-	lda #$02
-	adc #$02
+	lda #$07
+	adc #$04
 
 ```
 
-It might be worth noting that the input procedure above contains two instances of the `clc` instructions, and only one is needed. Either one may be deleted, and it is picked at random. Running the same program again might have yielded the instructions `clc` and `lda #$02` in a different order. The `cld` instruction is not needed at all on the 2A03 because this is a chip variant which lacks the decimal mode. On other varieties of the 6502, the `cld` instruction might be deemed necessary by the equivalence tester.
+It might be worth noting that the input procedure above contains two instances of the `clc` instructions, and only one is needed. Either one may be deleted, and it is picked at random. Running the same program again might have yielded the instructions `clc` and `lda #$02` in a different order. The `sed` instruction is not needed at all on the 2A03 because this is a chip variant which lacks the decimal mode. On other varieties of the 6502, as emulated by stoc-6510 for example, the `sed` instruction will be deemed necessary by the equivalence tester.
 
 ### Equivalence testing
 The way I'm currently testing two programs for equivalence is by running them a squillion times, each time with a random input. This means that the registers and memory locations read by the program are set to random values. Then the two programs are run. The output of the program is checked by looking in the live-out registers and live-out memory locations. If for the same input, the programs produce different output, then of course the programs are found to not be equivalent. Otherwise, the equivalence test passes. 
