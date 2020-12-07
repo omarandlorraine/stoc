@@ -30,7 +30,7 @@ $(BUILD_DIR)emu-6510.o $(BUILD_DIR)emu-6502.o: emulator.c
 
 $(BUILD_DIR)emu-2a03.o: emulator.c
 	mkdir -p $(BUILD_DIR)
-	$(CC) -c $(CFLAGS) emulator.c -o $@
+	$(CC) -DNES_CPU -c $(CFLAGS) emulator.c -o $@
 
 # Source file per target, generated at compile-time
 gen-6502.c gen-2a03.c: generate.py
