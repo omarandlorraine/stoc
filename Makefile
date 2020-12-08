@@ -2,7 +2,7 @@ CC=clang
 CFLAGS=-g -Werror -pedantic
 ALL_MACHINES = stoc-6502 stoc-2a03 stoc-6510 
 BUILD_DIR := build/
-SOURCES = tests.c exh.c labels.c asm65.c reg.c main.c instr.c stoc.c dce.c
+SOURCES = tests.c labels.c asm65.c reg.c main.c instr.c stoc.c search.c
 GENERATED = gen-6502.c gen-6510.c gen-65c02.c gen-2a03.c
 GENOBJECTS = $(GENERATED:%.c=$(BUILD_DIR)%.o)
 OBJECTS = $(SOURCES:%.c=$(BUILD_DIR)%.o)
