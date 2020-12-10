@@ -3,8 +3,7 @@
 #include "asm65.h"
 #include "reg.h"
 #include "tests.h"
-#include "exh.h"
-#include "dce.h"
+#include "search.h"
 #include "main.h"
 #include <stdio.h>
 #include <stdlib.h>

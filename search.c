@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "stoc.h"
 #include "tests.h"
-#include "exh.h"
+#include "search.h"
 #include "main.h"
 #include "labels.h"
 #include "instr.h"
