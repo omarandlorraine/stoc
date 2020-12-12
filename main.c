@@ -4,6 +4,7 @@
 #include "reg.h"
 #include "tests.h"
 #include "search.h"
+#include "exh.h"
 #include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -121,7 +122,7 @@ void parseoption(char * opt) {
 		return;
 	}
 	if(!strcmp("--exh", tmp)) {
-		exhaustive(&reference, &rewrite);
+		exhaustive(&reference);
 		return;
 	}
 	if(!strcmp("--dce", tmp)) {
