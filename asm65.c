@@ -106,6 +106,7 @@ int read_immediate_operand(char ** c) {
 	while(!alpha(**c)) {
 		if(!**c) return strlen(operand);
 		*dst++ = **c;
+		*dst = '\0';
 		++*c;
 	}
 	return 1;
