@@ -36,9 +36,9 @@ gen-6510.c: generate.py
 gen-65c02.c: generate.py
 	cat opcodes/basic-6502 opcodes/cmos-6502-extra | ./generate.py > $@
 
-.PHONY: fake6502_build
-fake6502_build:
-
+.PHONY: love
+love:
+	@echo Not war
 # The executables
 stoc-6502: $(BUILD_DIR)gen-6502.o $(OBJECTS)
 	make -C fake6502/ fake6502.o
