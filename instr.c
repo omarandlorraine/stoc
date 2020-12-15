@@ -17,7 +17,7 @@ int valid_opcode(uint8_t opcode) {
 	if(!pointers && is_indirect_x_instruction(opcode)) return 0;
 	if(!pointers && is_indirect_y_instruction(opcode)) return 0;
 
-	if(optable[opcode]) return 1;
+	if(opcode_legal_p(opcode)) return 1;
 
 	return 0;
 }

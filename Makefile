@@ -13,24 +13,18 @@ default: $(ALL_MACHINES)
 	grep FIXME *.c || true
 
 $(GENOBJECTS): $(BUILD_DIR)%.o:%.c
+	mkdir -p build/
 	$(CC) -c $(CFLAGS) -o $@ $^
 
 $(OBJECTS): $(BUILD_DIR)%.o:%.c
+	mkdir -p build/
 	$(CC) -c $(CFLAGS) -o $@ $^
 
 .PHONY: clean
 clean:
 	rm -rf gen-*.c *.o $(ALL_MACHINES)
 	rm -r build
-
-# Emulators to run code-sequences on.
-$(BUILD_DIR)emu-6510.o $(BUILD_DIR)emu-6502.o: emulator.c
-	mkdir -p $(BUILD_DIR)
-	$(CC) -c $(CFLAGS) emulator.c -o $@
-
-$(BUILD_DIR)emu-2a03.o: emulator.c
-	mkdir -p $(BUILD_DIR)
-	$(CC) -DNES_CPU -c $(CFLAGS) emulator.c -o $@
+	make -C fake6502/ clean
 
 # Source file per target, generated at compile-time
 gen-6502.c gen-2a03.c: generate.py
@@ -42,12 +36,18 @@ gen-6510.c: generate.py
 gen-65c02.c: generate.py
 	cat opcodes/basic-6502 opcodes/cmos-6502-extra | ./generate.py > $@
 
+.PHONY: fake6502_build
+fake6502_build:
+
 # The executables
-stoc-6502: $(BUILD_DIR)emu-6502.o $(BUILD_DIR)gen-6502.o $(OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $^
+stoc-6502: $(BUILD_DIR)gen-6502.o $(OBJECTS)
+	make -C fake6502/ fake6502.o
+	$(CC) $(CFLAGS) -o $@ $^ fake6502/fake6502.o
 
-stoc-6510: $(BUILD_DIR)emu-6510.o $(BUILD_DIR)gen-6510.o $(OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $^
+stoc-6510: $(BUILD_DIR)gen-6510.o $(OBJECTS)
+	make -C fake6502/ fake6502.o
+	$(CC) $(CFLAGS) -o $@ $^ fake6502/fake6502.o
 
-stoc-2a03: $(BUILD_DIR)emu-2a03.o $(BUILD_DIR)gen-2a03.o $(OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $^
+stoc-2a03: $(BUILD_DIR)gen-2a03.o $(OBJECTS)
+	make -C fake6502/ fake2a03.o
+	$(CC) $(CFLAGS) -o $@ $^ fake6502/fake2a03.o

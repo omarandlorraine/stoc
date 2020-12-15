@@ -1,0 +1,3 @@
+[submodule "fake6502"]
+	path = fake6502
+	url = ./fake6502/
