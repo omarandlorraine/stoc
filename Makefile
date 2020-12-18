@@ -23,7 +23,7 @@ $(OBJECTS): $(BUILD_DIR)%.o:%.c
 .PHONY: clean
 clean:
 	rm -rf gen-*.c *.o $(ALL_MACHINES)
-	rm -r build
+	rm -rf build
 	make -C fake6502/ clean
 
 # Source file per target, generated at compile-time
