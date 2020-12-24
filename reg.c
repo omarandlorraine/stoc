@@ -19,10 +19,11 @@ uint8_t live_in = 0;
 uint8_t live_out = 0;
 
 int reg_cmp(context_t * a, context_t * b, uint8_t live) {
-	if((live & REG_A) && (a->a != b->a)) return 1;
-	if((live & REG_X) && (a->x != b->x)) return 1;
-	if((live & REG_Y) && (a->y != b->y)) return 1;
-	return 0;
+	int score = 0;
+	if(live & REG_A) score += __builtin_popcount(a->a ^ b->a);
+	if(live & REG_X) score += __builtin_popcount(a->x ^ b->x);
+	if(live & REG_Y) score += __builtin_popcount(a->y ^ b->y);
+	return score;
 }
 
 void reg_rand(context_t * c, uint8_t live) {
