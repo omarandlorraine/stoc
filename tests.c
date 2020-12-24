@@ -43,23 +43,17 @@ int equivalence(context_t * reference, context_t * rewrite, int log) {
 		uint8_t y = rand();
 		uint8_t f = rand();
 		
-		reg_rand_in(reference);
-		reg_rand_out(reference);
-		reg_rand_in(rewrite);
-		reg_rand_out(rewrite);
 		rewrite->a = reference->a = a;
 		rewrite->x = reference->x = x;
 		rewrite->y = reference->y = y;
 		rewrite->flags = reference->flags = f;
 
-		int code = run(rewrite);
-		if(code) {
+		if(run(rewrite))
 			return 0;
-		}
-		code = run(reference);
-		if(code) {
+
+		if(run(reference))
 			return 0;
-		}
+
 		if(reg_cmp_out(reference, rewrite)) {
 			if(log--) {
 				printf("a = %02x, x = %02x, y = %02x\n", a, x, y);
