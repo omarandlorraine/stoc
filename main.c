@@ -39,6 +39,22 @@ void hexdump(context_t * c) {
 			fprintf(stderr, "\t%s #$%02x\n", opnames[instr], r.instructions[i].operand & 0x00ff);
 		} else if(is_zero_page_instruction(instr)) {
 			fprintf(stderr, "\t%s $%02x\n", opnames[instr], r.instructions[i].operand & 0x00ff);
+		} else if(is_zero_page_x_instruction(instr)) {
+			fprintf(stderr, "\t%s $%02x,x\n", opnames[instr], r.instructions[i].operand & 0x00ff);
+		} else if(is_zero_page_y_instruction(instr)) {
+			fprintf(stderr, "\t%s $%02x,y\n", opnames[instr], r.instructions[i].operand & 0x00ff);
+		} else if(is_absolute_instruction(instr)) {
+			fprintf(stderr, "\t%s $%04x\n", opnames[instr], r.instructions[i].operand);
+		} else if(is_absolute_y_instruction(instr)) {
+			fprintf(stderr, "\t%s $%04x,y\n", opnames[instr], r.instructions[i].operand);
+		} else if(is_absolute_x_instruction(instr)) {
+			fprintf(stderr, "\t%s $%04x,x\n", opnames[instr], r.instructions[i].operand);
+		} else if(is_indirect_instruction(instr)) {
+			fprintf(stderr, "\t%s $(%04x)\n", opnames[instr], r.instructions[i].operand & 0x00ff);
+		} else if(is_indirect_x_instruction(instr)) {
+			fprintf(stderr, "\t%s $(%02x),x\n", opnames[instr], r.instructions[i].operand & 0x00ff);
+		} else if(is_indirect_y_instruction(instr)) {
+			fprintf(stderr, "\t%s $(%02x,y)\n", opnames[instr], r.instructions[i].operand & 0x00ff);
 		} else {
 			fprintf(stderr, "\t$%02x", instr);
 			if(opcode_length(instr) > 1) fprintf(stderr, " $%02x", r.instructions[i].operand & 0x00ff);
