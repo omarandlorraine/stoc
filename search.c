@@ -15,10 +15,16 @@ static bool valid_operand(rewrite_t * r, instruction_t * i) {
 	if(is_immediate_instruction(i->opcode))
 		return true;
 
+	if(is_indirect_instruction(i->opcode))
+		return label_valid(i->operand);
+
 	if(is_indirect_x_instruction(i->opcode))
 		return label_valid(i->operand);
 
 	if(is_indirect_y_instruction(i->opcode))
+		return label_valid(i->operand);
+
+	if(is_absolute_instruction(i->opcode))
 		return label_valid(i->operand);
 
 	if(is_absolute_x_instruction(i->opcode))
@@ -39,7 +45,7 @@ static bool valid_operand(rewrite_t * r, instruction_t * i) {
 	if(is_relative_instruction(i->opcode)) {
 		// search across the whole program to make sure this relative branch
 		// points to an instruction
-		for(int j; j <= r->length; j++) {
+		for(int j = 0; j <= r->length; j++) {
 			if(r->instructions[j].address == i->address + (int8_t)i->operand)
 				return true;
 		}
