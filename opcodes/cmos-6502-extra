@@ -9,7 +9,7 @@ f2	sbc	indirect
 89	bit	immediate
 34	bit	zero-page-x
 3c	bit	absolute-x
-3a	dec	accumulator
+3a	dec	implied
 1a	inc	implied
 7c	jmp	absolute-x
 80	bra	relative

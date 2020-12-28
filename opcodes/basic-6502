@@ -3,7 +3,7 @@
 06 	asl	zero-page
 08 	php	implied
 09 	ora	immediate
-0a 	asl	accumulator
+0a 	asl	implied
 0d 	ora	absolute
 0e 	asl	absolute
 10 	bpl	relative
@@ -21,7 +21,7 @@
 26 	rol	zero-page
 28 	plp	implied
 29 	and	immediate
-2a 	rol	accumulator
+2a 	rol	implied
 2c 	bit	absolute
 2d 	and	absolute
 2e 	rol	absolute
@@ -57,7 +57,7 @@
 66 	ror	zero-page
 68 	pla	implied
 69 	adc	immediate
-6a 	ror	accumulator
+6a 	ror	implied
 6c 	jmp	indirect
 6d 	adc	absolute
 6e 	ror	absolute

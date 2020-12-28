@@ -94,7 +94,7 @@ for o in opcodes:
         sys.exit(1)
     c.append(o.codepoint)
 
-for o in [o for o in opcodes if o.mode not in ["absolute", "absolute-x", "absolute-y", "indirect", "zero-page", "zero-page-x", "zero-page-y", "indirect-x", "indirect-y", "immediate", "implied", "relative", "accumulator"]]:
+for o in [o for o in opcodes if o.mode not in ["absolute", "absolute-x", "absolute-y", "indirect", "zero-page", "zero-page-x", "zero-page-y", "indirect-x", "indirect-y", "immediate", "implied", "relative"]]:
     print("unknown mode %s" % o.mode, file=sys.stderr)
     print("Please check codepoint %s" % o.codepoint, file=sys.stderr)
     sys.exit(1)
