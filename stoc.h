@@ -17,6 +17,7 @@ bool indirect_x_instruction(char * op, uint8_t * out);
 int is_indirect_x_instruction(uint8_t op);
 bool indirect_y_instruction(char * op, uint8_t * out);
 int is_indirect_y_instruction(uint8_t op);
+int is_indirect_instruction(uint8_t op);
 int is_absolute_x_instruction(uint8_t op);
 int is_absolute_y_instruction(uint8_t op);
 int is_absolute_instruction(uint8_t op);
@@ -44,6 +45,9 @@ typedef struct r1 {
 	uint16_t length; // number of instructions
 	uint16_t end; 	// first address after last instruction
 	instruction_t instructions[REWRITE_LEN];
+	long double fitness;
+	long double mcycles; // machine cycles
+	int blength; // length in bytes
 } rewrite_t;
 
 typedef struct c1 {
@@ -53,12 +57,14 @@ typedef struct c1 {
 	uint8_t flags;
 	uint8_t s;
 	uint16_t pc;
-    int clockticks;
+    long long int clockticks;
+	long long int hamming;
     rewrite_t program;
 	data_t mem[ADDR_SPACE];
 	uint8_t memf[ADDR_SPACE];
 	uint16_t ea;
 	uint8_t opcode;
+	int exitcode;
 } context_t;
 
 void init_program(rewrite_t * r);

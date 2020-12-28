@@ -34,6 +34,29 @@ int run(context_t * c) {
 	return TOOK_TOO_LONG;
 }
 
+void run_both(context_t * reference, context_t * rewrite) {
+	uint8_t a;
+	uint8_t x;
+	uint8_t y;
+	uint8_t f;
+
+retry:
+	a = rand();
+	x = rand();
+	y = rand();
+	f = rand();
+	
+	rewrite->a = reference->a = a;
+	rewrite->x = reference->x = x;
+	rewrite->y = reference->y = y;
+	rewrite->flags = reference->flags = f;
+
+	rewrite->exitcode |= run(rewrite);
+	reference->exitcode |= run(reference);
+
+	rewrite->hamming += reg_cmp_out(reference, rewrite);
+}
+
 int equivalence(context_t * reference, context_t * rewrite, int log) {
 	install(reference);
 	install(rewrite);
@@ -63,4 +86,19 @@ int equivalence(context_t * reference, context_t * rewrite, int log) {
 		}
 	}
 	return 1;
+}
+
+void measure(context_t * reference, context_t * rewrite) {
+	install(reference);
+	install(rewrite);
+
+	long long int score = 0;
+	rewrite->clockticks = 0;
+
+	rewrite->exitcode = 0;
+	reference->exitcode = 0;
+
+	for(int i = 0; i < MAXITER; i++) {
+		run_both(reference, rewrite);
+	}
 }
