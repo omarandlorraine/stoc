@@ -57,7 +57,8 @@ static bool valid_operand(rewrite_t * r, instruction_t * i) {
 }
 
 static void remove_instr(context_t * proposal) {
-	int offs = rand() % proposal->program.length;
+	if(proposal->program.length == 0) return;
+	int offs = rand() % proposal->program.length + 1;
 	for(int i = offs; i < proposal->program.length - 1; i++) {
 		proposal->program.instructions[i] = proposal->program.instructions[i + 1];
 	}
