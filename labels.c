@@ -65,5 +65,6 @@ int label_valid(uint16_t val) {
 }
 
 uint16_t random_label() {
-	return rand() % labnum;
+	if(!labnum) return 0;
+	return addresses[rand() % labnum];
 }
