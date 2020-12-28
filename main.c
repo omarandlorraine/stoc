@@ -145,6 +145,14 @@ void parseoption(char * opt) {
 		deadcodeelim(&reference);
 		return;
 	}
+	if(!strcmp("--gen", tmp)) {
+		stoc_gen(&reference);
+		return;
+	}
+	if(!strcmp("--opt", tmp)) {
+		stoc_opt(&reference);
+		return;
+	}
 
 	fprintf(stderr, "Unknown option %s\n", opt);
 	exit(1);
