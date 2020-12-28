@@ -58,7 +58,6 @@ int getlbl(char * key, uint16_t * val) {
 int label_valid(uint16_t val) {
 	for(int i = 0; i < labnum; i++) {
 		if(val == addresses[i]) {
-			printf("Address %02x is valid, named %s.\n", val, labels[i]);
 			return 1;
 		}
 	}
