@@ -9,15 +9,15 @@ OBJECTS = $(SOURCES:%.c=$(BUILD_DIR)%.o)
 
 .PHONY: default
 default: $(ALL_MACHINES)
-	grep TODO *.c || true
-	grep FIXME *.c || true
+	@grep TODO *.c || true
+	@grep FIXME *.c || true
 
 $(GENOBJECTS): $(BUILD_DIR)%.o:%.c
-	mkdir -p build/
+	@mkdir -p build/
 	$(CC) -c $(CFLAGS) -o $@ $^
 
 $(OBJECTS): $(BUILD_DIR)%.o:%.c
-	mkdir -p build/
+	@mkdir -p build/
 	$(CC) -c $(CFLAGS) -o $@ $^
 
 .PHONY: clean
