@@ -56,6 +56,23 @@ static bool valid_operand(rewrite_t * r, instruction_t * i) {
 	exit(1);
 }
 
+static void randomise_instruction(rewrite_t * p, instruction_t * i) {
+	// TODO: There's a bug here that means this function will never return if
+	// the randomly selected opcode is a branch instruction. To work around it,
+	// I've excluded these instructions from consideration
+	uint8_t opcode;
+retry:
+	do {
+		opcode = rand();
+	} while(!opcode_legal_p(opcode));
+	if(is_relative_instruction(opcode)) goto retry;
+	i->opcode = opcode;
+	
+	do {	
+		i->operand = random_label();
+	} while(!valid_operand(p, i));
+}
+
 static void remove_instr(context_t * proposal) {
 	if(proposal->program.length == 0) return;
 	int offs = rand() % proposal->program.length + 1;
@@ -66,26 +83,12 @@ static void remove_instr(context_t * proposal) {
 }
 
 static void insert_instr(context_t * proposal) {
-	// TODO: There's a bug here that means this function will never return if
-	// the randomly selected opcode is a branch instruction. To work around it,
-	// I've excluded these instructions from consideration
 	int rnd = rand();
 	int offs = rnd % (proposal->program.length + 1);
 	for(int i = offs; i < proposal->program.length - 1; i++) {
 		proposal->program.instructions[i] = proposal->program.instructions[i - 1];
 	}
-	uint8_t opcode;
-	
-retry:
-	do {
-		opcode = rand();
-	} while(!opcode_legal_p(opcode));
-	if(is_relative_instruction(opcode)) goto retry;
-	proposal->program.instructions[offs].opcode = opcode;
-	
-	do {	
-		proposal->program.instructions[offs].operand = random_label();
-	} while(!valid_operand(&proposal->program, &proposal->program.instructions[offs]));
+	randomise_instruction(&proposal->program, &proposal->program.instructions[offs]);
 }
 
 static void random_mutation(context_t * proposal) {
