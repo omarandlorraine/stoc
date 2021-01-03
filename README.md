@@ -1,7 +1,7 @@
 # stoc
 Stochastic superoptimiser targetting the 6502
 
-So far the "stochastic" bit has not been implemented (early days yet). But we've at least got an exhaustive search and this exercises the emulator, equivalence tester and everything. Some assembly language files in `testing/` contain goofy code sequences that contain obvious inefficiencies. They are just there to demonstrate stoc.
+We've got a few different search strategies implemented actually, and these exercises the emulator, equivalence tester and everything. Some assembly language files in `testing/` contain goofy code sequences that contain obvious inefficiencies. They are just there to demonstrate stoc.
 
 To build the system, type `make`. For each architecture, (currently two or three varieties of 6502) `make` will generate the appropriate source code and compile an executable named `stoc-$arch`.
 
@@ -55,6 +55,47 @@ $ ./stoc-2a03 --org:0200 examples/test5.asm --hexdump --dce
 ```
 
 It might be worth noting that the input procedure above contains two instances of the `clc` instructions, and only one is needed. Either one may be deleted, and it is picked at random. Running the same program again might have yielded the instructions `clc` and `lda #$02` in a different order. The `sed` instruction is not needed at all on the 2A03 because this is a chip variant which lacks the decimal mode. On other varieties of the 6502, as emulated by stoc-6510 for example, the `sed` instruction will be deemed necessary by the equivalence tester.
+
+### Stochastic optimisation
+This search strategy walks around the search space by trying a number of mutations at a time, at sees if these mutations together either lower the cost or increase correctness (or both). If so, then the putative program (i.e. the one including the random mutations) replaces the current search space, and another walk begins. I don't know if this one will prove promising or not. Here are the possible mutations it does:
+ - Insert a random instruction
+ - Delete an instruction at random
+ - Modify a random instruction's operand
+ - Change a random instruction's opcode for another one, having the same addressing mode
+ - Pick two random instructions and swap them over
+ - Pick one instruction, and overwrite it entirely with another one.
+
+This will print successively better programs as it discovers them. I'm not sure I know when to let it stop. So it just tries a fazillion times. So here is an example run:
+```
+; 5 instructions
+; 0 bytes
+; 0 clockticks
+	clc
+	lda #$07
+	sed
+	clc
+	adc #$05
+
+; 4 instructions
+; 6 bytes
+; 8 clockticks
+	clc
+	lda #$07
+	clc
+	adc #$05
+
+; 3 instructions
+; 5 bytes
+; 6 clockticks
+	clc
+	lda #$07
+	adc #$05
+
+; 1 instructions
+; 2 bytes
+; 2 clockticks
+	lda #$0c
+```
 
 ### Equivalence testing
 The way I'm currently testing two programs for equivalence is by running them a squillion times, each time with a random input. This means that the registers and memory locations read by the program are set to random values. Then the two programs are run. The output of the program is checked by looking in the live-out registers and live-out memory locations. If for the same input, the programs produce different output, then of course the programs are found to not be equivalent. Otherwise, the equivalence test passes. 
