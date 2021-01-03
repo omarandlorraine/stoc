@@ -110,6 +110,9 @@ void parseoption(char * opt) {
         assemble(tmp + 11);
         return;
     }
+	if(!strcmp("--branchless", tmp)) {
+		set_branchless();
+	}
     if(!strncmp("--eq:", tmp, 5)) {
 		rewrite = reference;
         assemble(tmp + 5);
