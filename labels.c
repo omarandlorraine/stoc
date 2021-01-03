@@ -10,6 +10,16 @@ char labels[MAXLABELS][LABEL_LEN + 1];
 uint16_t addresses[MAXLABELS];
 static int labnum = 0;
 
+volatile static bool def = 0;
+volatile static bool zpdef = 0;
+
+bool labels_defined() {
+	return def;
+}
+bool zp_labels_defined() {
+	return zpdef;
+}
+
 void mklbli(char * key, uint16_t value) {
 	if(strlen(key) > LABEL_LEN) {
 		fprintf(stderr, "Cannot label %s; the identifier is too long. Maximum length is %d chars\n", key, LABEL_LEN);
@@ -26,6 +36,9 @@ void mklbli(char * key, uint16_t value) {
 		fprintf(stderr, "Refusing to redefine %s.\n", key);
 		exit(2);
 	}
+
+	def = true;
+	if(value < 256) zpdef = true;
 
 	strcpy(labels[labnum], key);
 	addresses[labnum] = value;

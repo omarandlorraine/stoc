@@ -6,6 +6,20 @@
 #define LABEL_LEN   20
 #define DATA_LEN    20
 
+
+#define ABSOLUTE 0
+#define ABSOLUTE_X 1
+#define ABSOLUTE_Y 2
+#define INDIRECT 3
+#define INDIRECT_X 4
+#define INDIRECT_Y 5
+#define ZERO_PAGE 6
+#define ZERO_PAGE_X 7
+#define ZERO_PAGE_Y 8
+#define RELATIVE 9
+#define IMMEDIATE 10
+#define IMPLIED 11
+
 bool opcode_legal_p(uint8_t op);
 int opcode_length(uint8_t op);
 int opcode_branch_p(uint8_t op);
@@ -28,6 +42,27 @@ int is_zero_page_x_instruction(uint8_t op);
 int is_zero_page_y_instruction(uint8_t op);
 int is_relative_instruction(uint8_t op);
 bool relative_instruction(char * op, uint8_t * out);
+
+typedef struct {
+	int len;
+	int mode;
+	uint8_t * opcodes;
+} addressing_mode_t;
+
+extern addressing_mode_t mode_absolute;
+extern addressing_mode_t mode_absolute_x;
+extern addressing_mode_t mode_absolute_y;
+extern addressing_mode_t mode_indirect;
+extern addressing_mode_t mode_zero_page;
+extern addressing_mode_t mode_zero_page_x;
+extern addressing_mode_t mode_zero_page_y;
+extern addressing_mode_t mode_indirect_x;
+extern addressing_mode_t mode_indirect_y;
+extern addressing_mode_t mode_immediate;
+extern addressing_mode_t mode_implied;
+extern addressing_mode_t mode_relative;
+extern addressing_mode_t* addressing_modes[256];
+
 
 typedef uint16_t addr_t;
 typedef uint8_t  data_t;

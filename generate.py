@@ -35,6 +35,23 @@ print("#include <string.h>")
 print("#include <stdio.h>")
 print("#include <stdlib.h>")
 
+# modes
+for m in lengths:
+	mode = m.replace('-', '_')
+	codes = sorted(["0x%s" % o.codepoint for o in opcodes if o.mode == m])
+	print("uint8_t mode_%s_ops[] = {%s};" % (mode, ", ".join(codes)))
+	print("addressing_mode_t mode_%s = {%d, %s, mode_%s_ops};" % (mode, len(codes), mode.upper(), mode))
+
+print("addressing_mode_t* addressing_modes[] = {")
+for c in range(256):
+	o = [o.mode for o in opcodes if int(o.codepoint, 16) == c]
+	if len(o):
+		print("\t&mode_%s," % o[0].replace('-', '_'))
+	else:
+		print("\t0,")
+print("};")
+
+
 # opcode_legal_p
 print("\n\nbool opcode_legal_p(uint8_t op) {")
 print("\tswitch(op) {")

@@ -7,70 +7,108 @@
 #include "labels.h"
 #include "instr.h"
 
+static bool branchless = false;
+static bool position_independence = false;
+
+void set_branchless() {
+	branchless = true;
+}
+
 static bool valid_operand(rewrite_t * r, instruction_t * i) {
-	// Sees whether an instruction's operand is valid.
-	if(is_implied_instruction(i->opcode))
+	switch(addressing_modes[i->opcode]->mode) {
+	case IMPLIED:
+	case IMMEDIATE:
 		return true;
 
-	if(is_immediate_instruction(i->opcode))
-		return true;
-
-	if(is_indirect_instruction(i->opcode))
+	case INDIRECT_X:
+	case INDIRECT_Y:
+	case ZERO_PAGE:
+	case ZERO_PAGE_X:
+	case ZERO_PAGE_Y:
+		if(i->operand > 255) return false;
+	case INDIRECT:
+	case ABSOLUTE:
+	case ABSOLUTE_X:
+	case ABSOLUTE_Y:
 		return label_valid(i->operand);
 
-	if(is_indirect_x_instruction(i->opcode))
-		return label_valid(i->operand);
-
-	if(is_indirect_y_instruction(i->opcode))
-		return label_valid(i->operand);
-
-	if(is_absolute_instruction(i->opcode))
-		return label_valid(i->operand);
-
-	if(is_absolute_x_instruction(i->opcode))
-		return label_valid(i->operand);
-
-	if(is_absolute_y_instruction(i->opcode))
-		return label_valid(i->operand);
-
-	if(is_zero_page_instruction(i->opcode))
-		return label_valid(i->operand);
-
-	if(is_zero_page_x_instruction(i->opcode))
-		return label_valid(i->operand);
-
-	if(is_zero_page_y_instruction(i->opcode))
-		return label_valid(i->operand);
-
-	if(is_relative_instruction(i->opcode)) {
+	case RELATIVE:
 		// search across the whole program to make sure this relative branch
 		// points to an instruction
 		for(int j = 0; j <= r->length; j++) {
-			if(r->instructions[j].address == i->address + (int8_t)i->operand)
+			if(r->instructions[j].address == i->address + (int8_t)(i->operand & 0x00ff))
 				return true;
 		}
 		return false;
 	}
-
 	printf("I don't know how to check this instruction %02x for validity\n", i->opcode);
 	exit(1);
 }
 
-static void randomise_instruction(rewrite_t * p, instruction_t * i) {
-	// TODO: There's a bug here that means this function will never return if
-	// the randomly selected opcode is a branch instruction. To work around it,
-	// I've excluded these instructions from consideration
+static uint8_t random_opcode() {
 	uint8_t opcode;
 retry:
 	do {
 		opcode = rand();
 	} while(!opcode_legal_p(opcode));
-	if(is_relative_instruction(opcode)) goto retry;
-	i->opcode = opcode;
-	
-	do {	
-		i->operand = random_label();
-	} while(!valid_operand(p, i));
+
+	int mode = addressing_modes[opcode]->mode;
+
+	if(!labels_defined()) {
+		// No labels have been defined at all
+		// So some addressing modes cannot be used.
+		if(mode == ABSOLUTE) goto retry;
+		if(mode == ABSOLUTE_X) goto retry;
+		if(mode == ABSOLUTE_Y) goto retry;
+		if(mode == ZERO_PAGE) goto retry;
+		if(mode == ZERO_PAGE_X) goto retry;
+		if(mode == ZERO_PAGE_Y) goto retry;
+		if(mode == INDIRECT) goto retry;
+		if(mode == INDIRECT_X) goto retry;
+		if(mode == INDIRECT_Y) goto retry;
+	}
+	if(!zp_labels_defined()) {
+		// No labels have been defined in Zero Page,
+		// So some addressing modes cannot be used.
+		if(mode == ZERO_PAGE) goto retry;
+		if(mode == ZERO_PAGE_X) goto retry;
+		if(mode == ZERO_PAGE_Y) goto retry;
+		if(mode == INDIRECT_X) goto retry;
+		if(mode == INDIRECT_Y) goto retry;
+	}
+
+	return opcode;
+}
+
+static void randomise_operand(rewrite_t * p, instruction_t * i) {
+	uint8_t opcode = i->opcode;
+	addressing_mode_t * mode = addressing_modes[i->opcode];
+	if(!mode) return;
+	switch(mode->mode) {
+	case IMPLIED:
+		break;
+
+	case IMMEDIATE:
+		i->operand = rand();
+		break;
+
+	case RELATIVE:
+		do {
+			i->operand = random_label();
+		} while(!valid_operand(p, i));
+		break;
+
+	default:
+		do {
+			i->operand = random_label();
+		} while(!valid_operand(p, i));
+		break;
+	}
+}
+
+static void randomise_instruction(rewrite_t * p, instruction_t * i) {
+	i->opcode = random_opcode();
+	randomise_operand(p, i);
 }
 
 static void remove_instr(context_t * proposal) {
@@ -85,21 +123,86 @@ static void remove_instr(context_t * proposal) {
 static void insert_instr(context_t * proposal) {
 	int rnd = rand();
 	int offs = rnd % (proposal->program.length + 1);
-	for(int i = offs; i < proposal->program.length - 1; i++) {
+	proposal->program.length++;
+	for(int i = proposal->program.length; i > offs; i--) {
 		proposal->program.instructions[i] = proposal->program.instructions[i - 1];
 	}
 	randomise_instruction(&proposal->program, &proposal->program.instructions[offs]);
 }
 
+static void modify_operand(context_t * proposal) {
+	if(proposal->program.length == 0) return;
+	int rnd = rand();
+	int offs = rnd % (proposal->program.length + 1);
+	randomise_operand(&proposal->program, &proposal->program.instructions[offs]);
+}
+
+static void modify_opcode(context_t * proposal) {
+	if(proposal->program.length == 0) return;
+	int offs = rand() % (proposal->program.length + 1);
+	instruction_t i = proposal->program.instructions[offs];
+	uint8_t opcode = i.opcode;
+	addressing_mode_t * m = addressing_modes[opcode];
+	if(m) {
+		uint8_t new = m->opcodes[rand() % m->len];
+		i.opcode = new;
+	}
+}
+
+static void replace_instr(context_t * proposal) {
+	if(proposal->program.length == 0) return;
+	int offs = rand() % (proposal->program.length + 1);
+	proposal->program.instructions[offs].opcode = random_opcode();
+	randomise_operand(&proposal->program, &proposal->program.instructions[offs]);
+}
+
+static void swap_instrs(context_t * proposal) {
+	if(proposal->program.length == 0) return;
+	int offs1 = rand() % (proposal->program.length + 1);
+	instruction_t temp = proposal->program.instructions[offs1];
+	int offs2 = rand() % (proposal->program.length + 1);
+	proposal->program.instructions[offs1] = proposal->program.instructions[offs2];
+	proposal->program.instructions[offs2] = temp;
+}
+
+static bool checkem(rewrite_t * r) {
+	if(r->length >= REWRITE_LEN) {
+		// the rewrite has exceeded the maximum length
+		return false;
+	}
+
+	for(int i = 0; i < r->length - 1; i++)
+		if(!opcode_legal_p(r->instructions[i].opcode))
+			return false;
+
+	if(branchless)
+		for(int i = 0; i < r->length - 1; i++)
+			if(!opcode_branch_p(r->instructions[i].opcode))
+				return false;
+	return true;
+}
+
 static void random_mutation(context_t * proposal) {
-	int r = rand() % 2;
+	int r = rand() % 3; // Keep on incrementing this until all mutations get tested okay.
 	switch(r) {
 	case 0:
 		remove_instr(proposal);
-		return;
+		break;
 	case 1:
 		insert_instr(proposal);
-		return;
+		break;
+	case 2:
+		modify_opcode(proposal);
+		break;
+	case 3:
+		modify_operand(proposal);
+		break;
+	case 4:
+		replace_instr(proposal);
+		break;
+	case 5:
+		swap_instrs(proposal);
+		break;
 	}
 }
 
@@ -115,16 +218,20 @@ void stoc_opt(context_t * reference) {
 
 	bool first = true;
 
-	for(int i = 0; i < 1000; i++) {
+	for(int i = 0; i < 1000000; i++) {
 		proposal = rewrite;
 
-		for(int j = 0; j < 5; j++) {
+		for(int j = 0; j < 100; j++) {
 			random_mutation(&proposal);
-			if(equivalence(reference, &proposal, 0)) {
-				int ocost = cost(reference);
+			if(checkem(&proposal.program) && equivalence(reference, &proposal, 0)) {
+				measure(&rewrite, &proposal);
+				int ocost = cost(&rewrite);
 				int pcost = cost(&proposal);
-				if(pcost < ocost)
+				if(pcost < ocost) {
+					printf("ocost %d\tpcost %d\n", ocost, pcost);
 					rewrite = proposal;
+					hexdump(&proposal);
+				}
 			}
 		}
 	}
@@ -134,6 +241,8 @@ void stoc_opt(context_t * reference) {
 void stoc_gen(context_t * reference) {
 	// We're going to try millions of random mutations until we find a program
 	// that's both equivalent and more optimal
+	// FIXME: Sometimes this gets stuck and stops moving around the search space, I don't know why
+	// FIXME: Sometimes this actually inserts a 0 opcode, even though that's illegal.
 	context_t rewrite;
 	context_t proposal;
 	
