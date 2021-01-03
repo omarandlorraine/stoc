@@ -14,7 +14,7 @@
 19 	ora	absolute-y
 1d 	ora	absolute-x
 1e 	asl	absolute-x
-20 	jsr	implied
+20 	jsr	absolute
 21 	and	indirect-x
 24 	bit	zero-page
 25 	and	zero-page
