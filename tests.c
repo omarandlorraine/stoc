@@ -20,6 +20,7 @@ void install(context_t * c) {
 		if(opcode_length(instr) > 2) mem_write(c, addr++, r->instructions[i].operand >> 8);
 		r->end = addr;
 	}
+	r->blength = addr - r->org;
 }
 
 int run(context_t * c) {
@@ -92,13 +93,16 @@ void measure(context_t * reference, context_t * rewrite) {
 	install(reference);
 	install(rewrite);
 
-	long long int score = 0;
 	rewrite->clockticks = 0;
+	reference->clockticks = 0;
 
 	rewrite->exitcode = 0;
 	reference->exitcode = 0;
 
-	for(int i = 0; i < MAXITER; i++) {
+	int i;
+	for(i = 0; i < MAXITER; i++) {
 		run_both(reference, rewrite);
 	}
+	reference->clockticks /= i;
+	rewrite->clockticks /= i;
 }

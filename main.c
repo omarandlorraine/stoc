@@ -31,6 +31,7 @@ void mem_write(context_t * c, uint16_t address, uint8_t val) {
 void hexdump(context_t * c) {
 	rewrite_t r = c->program;
 	printf("; %d instructions\n", r.length);
+	printf("; %d bytes\n; %lld clockticks\n;", r.blength, c->clockticks);
 	for(int i = 0; i < r.length; i++) {
 		uint8_t instr = r.instructions[i].opcode;
 		if(is_implied_instruction(instr)) {
