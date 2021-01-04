@@ -40,16 +40,18 @@ void run_both(context_t * reference, context_t * rewrite) {
 	uint8_t x;
 	uint8_t y;
 	uint8_t f;
+	uint8_t s;
 
-retry:
 	a = rand();
 	x = rand();
 	y = rand();
 	f = rand();
+	s = rand();
 	
 	rewrite->a = reference->a = a;
 	rewrite->x = reference->x = x;
 	rewrite->y = reference->y = y;
+	rewrite->s = reference->s = s;
 	rewrite->flags = reference->flags = f;
 
 	rewrite->exitcode |= run(rewrite);

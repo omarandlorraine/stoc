@@ -7,6 +7,7 @@
 #define REG_A 0x01
 #define REG_X 0x02
 #define REG_Y 0x04
+#define REG_S 0x08
 
 /*
  * Part of the live-variable analysis
@@ -23,6 +24,7 @@ int reg_cmp(context_t * a, context_t * b, uint8_t live) {
 	if(live & REG_A) score += __builtin_popcount(a->a ^ b->a);
 	if(live & REG_X) score += __builtin_popcount(a->x ^ b->x);
 	if(live & REG_Y) score += __builtin_popcount(a->y ^ b->y);
+	if(live & REG_S) score += __builtin_popcount(a->s ^ b->s);
 	return score;
 }
 
