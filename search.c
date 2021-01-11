@@ -183,7 +183,7 @@ static bool checkem(rewrite_t * r) {
 }
 
 static void random_mutation(context_t * proposal) {
-	int r = rand() % 3; // Keep on incrementing this until all mutations get tested okay.
+	int r = rand() % 6; // Keep on incrementing this until all mutations get tested okay.
 	switch(r) {
 	case 0:
 		remove_instr(proposal);
