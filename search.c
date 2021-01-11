@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include "stoc.h"
 #include "tests.h"
 #include "search.h"
@@ -120,6 +121,11 @@ static void remove_instr(context_t * proposal) {
 	proposal->program.length--;
 }
 
+static void insert_nop(context_t * proposal) {
+	proposal->program.length = 1;
+	implied_instruction("nop", &proposal->program.instructions[0].opcode);
+}
+
 static void insert_instr(context_t * proposal) {
 	int rnd = rand();
 	int offs = rnd % (proposal->program.length + 1);
@@ -206,8 +212,26 @@ static void random_mutation(context_t * proposal) {
 	}
 }
 
-static int cost(context_t * c) {
-	return c->clockticks;
+static int clockticks_cost(context_t * c) {
+	if(c->exitcode) return INT_MAX;
+	return c->clockticks + c->hamming;
+}
+
+static int hamming_cost(context_t * c) {
+	return c->hamming;
+}
+
+static bool iterate(context_t * reference, context_t * rewrite, context_t * proposal, int (*cost)(context_t * r)) {
+	random_mutation(proposal);
+	if(checkem(&proposal->program)) {
+		measure_two(reference, rewrite, proposal);
+		int ocost = cost(rewrite);
+		int pcost = cost(proposal);
+		if(pcost < ocost) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void stoc_opt(context_t * reference) {
@@ -220,19 +244,15 @@ void stoc_opt(context_t * reference) {
 
 	for(int i = 0; i < 1000000; i++) {
 		proposal = rewrite;
+		printf("iteration %d\n", i);
 
 		for(int j = 0; j < 100; j++) {
-			random_mutation(&proposal);
-			if(checkem(&proposal.program) && equivalence(reference, &proposal, 0)) {
-				measure(&rewrite, &proposal);
-				int ocost = cost(&rewrite);
-				int pcost = cost(&proposal);
-				if(pcost < ocost) {
-					printf("ocost %d\tpcost %d\n", ocost, pcost);
-					rewrite = proposal;
-					hexdump(&proposal);
-				}
+			if(iterate(reference, &rewrite, &proposal, &clockticks_cost)) {
+				hexdump(&proposal);
+				rewrite = proposal;
 			}
+			//hexdump(&rewrite);
+			//hexdump(&proposal);
 		}
 	}
 	hexdump(&rewrite);
@@ -240,50 +260,27 @@ void stoc_opt(context_t * reference) {
 
 void stoc_gen(context_t * reference) {
 	// We're going to try millions of random mutations until we find a program
-	// that's both equivalent and more optimal
-	// FIXME: Sometimes this gets stuck and stops moving around the search space, I don't know why
-	// FIXME: Sometimes this actually inserts a 0 opcode, even though that's illegal.
-	context_t rewrite;
+	// that's equivalent. 
+	context_t rewrite = *reference;
 	context_t proposal;
-	
-	init_program(&(rewrite.program));
-	init_program(&(proposal.program));
-
-	rewrite = *reference;
-	hexdump(&rewrite);
-	measure(reference, reference);
-	hexdump(&rewrite);
+	init_program(&rewrite.program);
+	insert_nop(&rewrite);
 
 	bool first = true;
-	int i = 0;
-	for(;;) {
-		printf("iteration %d\n", i++);
+
+	for(int i = 0; i < 1000000; i++) {
 		proposal = rewrite;
-		hexdump(&rewrite);
+		hexdump(&proposal);
 
-		for(int j = 0; j < 5; j++) {
-			printf("inner loop\n");
-			hexdump(&rewrite);
-			random_mutation(&proposal);
-			hexdump(&rewrite);
-			if(!proposal.program.length) break;
-			if(proposal.exitcode) break;
-
-			measure(&rewrite, &proposal);
-
-			int rfit = proposal.hamming + proposal.program.fitness;
-			int pfit = rewrite.hamming + rewrite.program.fitness;
-
-			if(rfit > pfit) {
-				rewrite = proposal;
-				first = false;
-			}
-			if(!first && equivalence(reference, &proposal, 0)) {
-				stoc_opt(&proposal);
+		for(int j = 0; j < 100; j++) {
+			if(iterate(&rewrite, &rewrite, &proposal, &hamming_cost)) {
+				printf("accepted\n");
+				hexdump(&proposal);
 				rewrite = proposal;
 			}
 		}
 	}
+	hexdump(&rewrite);
 }
 
 
