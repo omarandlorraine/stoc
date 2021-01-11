@@ -60,6 +60,33 @@ void run_both(context_t * reference, context_t * rewrite) {
 	rewrite->hamming += reg_cmp_out(reference, rewrite);
 }
 
+void test_both(context_t * reference, context_t * rewrite_a, context_t * rewrite_b) {
+	uint8_t a;
+	uint8_t x;
+	uint8_t y;
+	uint8_t f;
+	uint8_t s;
+
+	a = rand();
+	x = rand();
+	y = rand();
+	f = rand();
+	s = rand();
+	
+	rewrite_a->a = rewrite_b->a = reference->a = a;
+	rewrite_a->x = rewrite_b->x = reference->x = x;
+	rewrite_a->y = rewrite_b->y = reference->y = y;
+	rewrite_a->s = rewrite_b->s = reference->s = s;
+	rewrite_a->flags = rewrite_b->flags = reference->flags = f;
+
+	rewrite_a->exitcode |= run(rewrite_a);
+	rewrite_b->exitcode |= run(rewrite_b);
+	reference->exitcode |= run(reference);
+
+	rewrite_a->hamming += reg_cmp_out(reference, rewrite_a);
+	rewrite_b->hamming += reg_cmp_out(reference, rewrite_b);
+}
+
 int equivalence(context_t * reference, context_t * rewrite, int log) {
 	install(reference);
 	install(rewrite);
@@ -74,13 +101,9 @@ int equivalence(context_t * reference, context_t * rewrite, int log) {
 		rewrite->y = reference->y = y;
 		rewrite->flags = reference->flags = f;
 
-		if(run(rewrite))
-			return 0;
+		run_both(reference, rewrite);
 
-		if(run(reference))
-			return 0;
-
-		if(reg_cmp_out(reference, rewrite)) {
+		if(rewrite->hamming) {
 			if(log--) {
 				printf("a = %02x, x = %02x, y = %02x\n", a, x, y);
 			} else {
@@ -91,20 +114,46 @@ int equivalence(context_t * reference, context_t * rewrite, int log) {
 	return 1;
 }
 
-void measure(context_t * reference, context_t * rewrite) {
+void measure(context_t * reference, context_t * rewrite_a) {
 	install(reference);
-	install(rewrite);
+	install(rewrite_a);
 
-	rewrite->clockticks = 0;
+	rewrite_a->clockticks = 0;
 	reference->clockticks = 0;
 
-	rewrite->exitcode = 0;
+	rewrite_a->exitcode = 0;
 	reference->exitcode = 0;
+
+	rewrite_a->hamming = 0;
 
 	int i;
 	for(i = 0; i < MAXITER; i++) {
-		run_both(reference, rewrite);
+		run_both(reference, rewrite_a);
 	}
 	reference->clockticks /= i;
-	rewrite->clockticks /= i;
+	rewrite_a->clockticks /= i;
+}
+
+void measure_two(context_t * reference, context_t * rewrite_a, context_t * rewrite_b) {
+	install(reference);
+	install(rewrite_a);
+	install(rewrite_b);
+
+	rewrite_a->clockticks = 0;
+	rewrite_b->clockticks = 0;
+	reference->clockticks = 0;
+
+	rewrite_a->exitcode = 0;
+	rewrite_b->exitcode = 0;
+	reference->exitcode = 0;
+
+	rewrite_a->hamming = 0;
+
+	int i;
+	for(i = 0; i < MAXITER; i++) {
+		test_both(reference, rewrite_a, rewrite_b);
+	}
+	reference->clockticks /= i;
+	rewrite_a->clockticks /= i;
+	rewrite_b->clockticks /= i;
 }

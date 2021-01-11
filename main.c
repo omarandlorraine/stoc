@@ -31,7 +31,7 @@ void mem_write(context_t * c, uint16_t address, uint8_t val) {
 void hexdump(context_t * c) {
 	rewrite_t * r = &c->program;
 	printf("; %d instructions\n", r->length);
-	printf("; %d bytes\n; %lld clockticks\n;", r->blength, c->clockticks);
+	printf("; %d bytes\n; %lld clockticks\n", r->blength, c->clockticks);
 	printf("; hamming distance %lld\n", c->hamming);
 	for(int i = 0; i < r->length; i++) {
 		uint8_t instr = r->instructions[i].opcode;
@@ -55,6 +55,8 @@ void hexdump(context_t * c) {
 			fprintf(stderr, "\t%s $(%04x)\n", opnames[instr], r->instructions[i].operand & 0x00ff);
 		} else if(is_indirect_x_instruction(instr)) {
 			fprintf(stderr, "\t%s $(%02x),x\n", opnames[instr], r->instructions[i].operand & 0x00ff);
+		} else if(is_relative_instruction(instr)) {
+			fprintf(stderr, "\t%s * + %02x\n", opnames[instr], r->instructions[i].operand & 0x00ff);
 		} else if(is_indirect_y_instruction(instr)) {
 			fprintf(stderr, "\t%s $(%02x,y)\n", opnames[instr], r->instructions[i].operand & 0x00ff);
 		} else {

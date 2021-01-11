@@ -2,6 +2,7 @@
 
 int equivalence(context_t * a, context_t * b, int log);
 void measure(context_t * reference, context_t * rewrite);
+void measure_two(context_t * reference, context_t * rewrite_a, context_t * rewrite_b);
 
 // The codes below need to be powers of two
 #define NORMAL_EXIT 0
