@@ -56,7 +56,7 @@ void hexdump(context_t * c) {
 		} else if(is_indirect_x_instruction(instr)) {
 			fprintf(stderr, "\t%s $(%02x),x\n", opnames[instr], r->instructions[i].operand & 0x00ff);
 		} else if(is_relative_instruction(instr)) {
-			fprintf(stderr, "\t%s * + %02x\n", opnames[instr], r->instructions[i].operand & 0x00ff);
+			fprintf(stderr, "\t%s * + %d\n", opnames[instr], r->instructions[i].operand & 0x00ff);
 		} else if(is_indirect_y_instruction(instr)) {
 			fprintf(stderr, "\t%s $(%02x,y)\n", opnames[instr], r->instructions[i].operand & 0x00ff);
 		} else {
