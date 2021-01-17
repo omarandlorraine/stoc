@@ -218,6 +218,7 @@ static int clockticks_cost(context_t * c) {
 }
 
 static int hamming_cost(context_t * c) {
+	if(c->exitcode) return INT_MAX;
 	return c->hamming;
 }
 
@@ -240,8 +241,6 @@ void stoc_opt(context_t * reference) {
 	context_t rewrite = *reference;
 	context_t proposal;
 
-	bool first = true;
-
 	for(int i = 0; i < 1000000; i++) {
 		proposal = rewrite;
 		printf("iteration %d\n", i);
@@ -251,8 +250,6 @@ void stoc_opt(context_t * reference) {
 				hexdump(&proposal);
 				rewrite = proposal;
 			}
-			//hexdump(&rewrite);
-			//hexdump(&proposal);
 		}
 	}
 	hexdump(&rewrite);
@@ -264,19 +261,20 @@ void stoc_gen(context_t * reference) {
 	context_t rewrite = *reference;
 	context_t proposal;
 	init_program(&rewrite.program);
-	insert_nop(&rewrite);
+	insert_instr(&rewrite);
+	hexdump(&rewrite);
 
-	bool first = true;
-
-	for(int i = 0; i < 1000000; i++) {
+	for(int i = 0; i < 10000000; i++) {
 		proposal = rewrite;
-		hexdump(&proposal);
 
-		for(int j = 0; j < 100; j++) {
-			if(iterate(&rewrite, &rewrite, &proposal, &hamming_cost)) {
-				printf("accepted\n");
+		for(int j = 0; j < 10; j++) {
+			if(iterate(reference, &rewrite, &proposal, &hamming_cost)) {
 				hexdump(&proposal);
 				rewrite = proposal;
+			} else {
+//				hexdump(&rewrite);
+//				hexdump(&proposal);
+//				printf("============================================\n");
 			}
 		}
 	}
