@@ -3,7 +3,7 @@
      bmi min
      lda #$01
      bne ret
-min  lda #$ff
+min  lda #255
 ret  clc
      liveoutregisters	a
      liveinregisters	a

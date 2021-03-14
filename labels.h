@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdint.h>
 void mklbl(char * key, char * val);
 void mklbli(char * key, uint16_t val);
 int getlbl(char * key, uint16_t * val);

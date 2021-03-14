@@ -1,5 +1,6 @@
 CC=clang
 CFLAGS=-g -Werror -pedantic
+LDOPTS = -lreadline
 ALL_MACHINES = stoc-6502 stoc-2a03 stoc-6510 stoc-65c02
 BUILD_DIR := build/
 SOURCES = tests.c labels.c asm65.c reg.c main.c instr.c stoc.c search.c exh.c
@@ -39,19 +40,28 @@ gen-65c02.c: generate.py
 .PHONY: love
 love:
 	@echo Not war
+
+.PHONY: cppcheck
+cppcheck: $(GENERATED)
+	cppcheck *.c *.h
+
+.PHONY: format
+format:
+	clang-format -style="{BasedOnStyle: llvm, IndentWidth: 4}" -i *.c
+
 # The executables
 stoc-6502: $(BUILD_DIR)gen-6502.o $(OBJECTS)
 	make -C fake6502/ fake6502.o
-	$(CC) $(CFLAGS) -o $@ $^ fake6502/fake6502.o
+	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/fake6502.o
 
 stoc-6510: $(BUILD_DIR)gen-6510.o $(OBJECTS)
 	make -C fake6502/ fake6502.o
-	$(CC) $(CFLAGS) -o $@ $^ fake6502/fake6502.o
+	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/fake6502.o
 
 stoc-2a03: $(BUILD_DIR)gen-2a03.o $(OBJECTS)
 	make -C fake6502/ fake2a03.o
-	$(CC) $(CFLAGS) -o $@ $^ fake6502/fake2a03.o
+	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/fake2a03.o
 
 stoc-65c02: $(BUILD_DIR)gen-65c02.o $(OBJECTS)
 	make -C fake6502/ fake65c02.o
-	$(CC) $(CFLAGS) -o $@ $^ fake6502/fake65c02.o
+	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/fake65c02.o
