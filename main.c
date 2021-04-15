@@ -114,14 +114,6 @@ void parseoption(char *opt) {
         return;
     }
 
-	char * value = colon + 1;
-	if(!strncmp("--org:", tmp, 6)) {
-		org = strtol(value, NULL, 16);
-		reference.program.org = org;
-		rewrite.program.org = org;
-		proposal.program.org = org;
-		return;
-	}
     if(!strncmp("--assemble:", tmp, 11)) {
         assemble(tmp + 11);
         return;
