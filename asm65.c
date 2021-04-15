@@ -41,7 +41,11 @@ bool parse_hexadecimal(char * val, uint16_t * out) {
 	char * end = NULL;
     int value = strtol(val + 1, &end, 16);
 	*out = value;
-	return !strcmp(end, "\n");
+	if(strcmp(end, "\n")) {
+		return 0;
+	} else {
+		return 1;
+	}
 }
 
 bool parse_operand_zeropage(char * operand, uint16_t * out) {
@@ -53,6 +57,7 @@ bool parse_operand_zeropage(char * operand, uint16_t * out) {
 
 bool parse_operand_absolute(char * operand, uint16_t * out) {
 	if(getlbl(operand, out)) return 1;
+	if(parse_hexadecimal(operand, out)) return 1;
 	return 0;
 }
 
@@ -135,15 +140,25 @@ int end_line(char ** c) {
 int directive(char * line) {
 	if(!begin_line(&line)) return 0;
 	if(!read_opcode(&line)) return 0;
-	if(!read_alpha(&line)) return 0;
-	if(!end_line(&line)) return 0;
 
 	if(!strcmp(opcode, "liveoutregisters")) {
+		if(!read_alpha(&line)) return 0;
 		reg_out(operand);
 		return 1;
 	}
 	else if(!strcmp(opcode, "liveinregisters")) {
+		if(!read_alpha(&line)) return 0;
 		reg_in(operand);
+		return 1;
+	}
+	else if(!strcmp(opcode, "org")) {
+		uint16_t norg;
+		swallow_whitespace(&line);
+		if(!parse_operand_absolute(line, &norg)) {
+			fprintf(stderr, "Couldn't parse argument to org: \"%s\"\n", line);
+			exit(1);
+		}
+		org = norg;
 		return 1;
 	}
 	return 0;
@@ -204,11 +219,6 @@ void assemble(char * file) {
 		exit(1);
 	}
 
-	if(org == 0) {
-		fprintf(stderr, "Warning: org is zero; this is probably not what you meant to do.\n");
-		fprintf(stderr, "define org before assembling with eg: --org:0200\n");
-	}
-
 	for(int pass = 0; pass < 2; pass++) {	
 		int rewrite_offset = 0;
 		linenumber = 0;
@@ -241,7 +251,7 @@ next_instruction:
 	fclose(filePointer);
 	return;
 error:
-	printf("Error on line %d\nlabel = \"%s\"\nopcode = \"%s\"\noperand = \"%s\"\n", linenumber, label, opcode, operand);
+	fprintf(stderr, "Error on line %d\nlabel = \"%s\"\nopcode = \"%s\"\noperand = \"%s\"\n", linenumber, label, opcode, operand);
 	printf("What does this line mean: %s %s\nline %d\n", line, operand, linenumber);
 	exit(1);
 }
