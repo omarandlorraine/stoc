@@ -41,38 +41,12 @@ void reg_rand(context_t *c, uint8_t live) {
         c->y = rand();
 }
 
-void reg_out(char *s) {
-    while (*s) {
-        if (*s == 'a')
-            live_out |= REG_A;
-        else if (*s == 'x')
-            live_out |= REG_X;
-        else if (*s == 'y')
-            live_out |= REG_Y;
-        else if (*s == '\n')
-            (void)0;
-        else {
-            fprintf(stderr, "unknown register %s\n", s);
-            exit(1);
-        }
-        s++;
-    }
+void reg_out(int reg) {
+	live_out |= reg;
 }
 
-void reg_in(char *s) {
-    while (*s) {
-        if (*s == 'a')
-            live_in |= REG_A;
-        else if (*s == 'x')
-            live_in |= REG_X;
-        else if (*s == 'y')
-            live_in |= REG_Y;
-        else {
-            fprintf(stderr, "unknown register %s\n", s);
-            exit(1);
-        }
-        s++;
-    }
+void reg_in(int reg) {
+	live_out |= reg;
 }
 
 void reg_rand_in(context_t *c) { reg_rand(c, live_in); }
