@@ -6,6 +6,8 @@
 #include <string.h>
 #include "reg.h"
 #include "search.h"
+#include "exh.h"
+
 #define ASMBUFLEN 255
 
 static int org;
@@ -147,6 +149,24 @@ int directive(char * line) {
 			return 0;
 		}
 		stoc_opt(&reference);
+		return 1;
+	}
+
+	if(!strcmp(opcode, "dead_code_elimination\n")) {
+		if(!end_line(&line)) {
+			printf("not end of line");
+			return 0;
+		}
+		deadcodeelim(&reference);
+		return 1;
+	}
+
+	if(!strcmp(opcode, "exhaustive_search\n")) {
+		if(!end_line(&line)) {
+			printf("not end of line");
+			return 0;
+		}
+		exhaustive(&reference);
 		return 1;
 	}
 
