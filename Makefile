@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS=-g -Werror -pedantic
+CFLAGS=-g -Wall -Werror -pedantic
 LDOPTS = -lreadline
 ALL_MACHINES = stoc-6502 stoc-2a03 stoc-6510 stoc-65c02
 BUILD_DIR := build/
