@@ -5,17 +5,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include "reg.h"
-
+#include "search.h"
 #define ASMBUFLEN 255
 
-extern int org;
-extern context_t reference;
+static int org;
+static context_t reference;
 
-char label[ASMBUFLEN] = {0};
-char opcode[ASMBUFLEN] = {0};
-char operand[ASMBUFLEN] = {0};
-uint8_t mopcode;
-uint16_t moperand;
+static char label[ASMBUFLEN] = {0};
+static char opcode[ASMBUFLEN] = {0};
+static char operand[ASMBUFLEN] = {0};
+static uint8_t mopcode;
+static uint16_t moperand;
 
 bool alpha(char c) {
 	if(c < 'a') return false;
@@ -141,15 +141,55 @@ int directive(char * line) {
 	if(!begin_line(&line)) return 0;
 	if(!read_opcode(&line)) return 0;
 
-	if(!strcmp(opcode, "liveoutregisters")) {
-		if(!read_alpha(&line)) return 0;
-		reg_out(operand);
+	if(!strcmp(opcode, "optimize\n")) {
+		if(!end_line(&line)) {
+			printf("not end of line");
+			return 0;
+		}
+		stoc_opt(&reference);
 		return 1;
 	}
-	else if(!strcmp(opcode, "liveinregisters")) {
+
+	if(!strcmp(opcode, "liveout")) {
 		if(!read_alpha(&line)) return 0;
-		reg_in(operand);
-		return 1;
+		if(!end_line(&line)) return 0;
+		if(!strcmp(operand, "a")) {
+			reg_out(REG_A);
+			return 1;
+		}
+
+		if(!strcmp(operand, "x")) {
+			reg_out(REG_X);
+			return 1;
+		}
+
+		if(!strcmp(operand, "y")) {
+			reg_out(REG_Y);
+			return 1;
+		}
+		fprintf(stderr, "Couldn't parse the liveout object: %s\n", operand);
+		return 0;
+	}
+	
+	else if(!strcmp(opcode, "livein")) {
+		if(!read_alpha(&line)) return 0;
+		if(!end_line(&line)) return 0;
+		if(!strcmp(operand, "a")) {
+			reg_out(REG_A);
+			return 1;
+		}
+
+		if(!strcmp(operand, "x")) {
+			reg_out(REG_X);
+			return 1;
+		}
+
+		if(!strcmp(operand, "y")) {
+			reg_out(REG_Y);
+			return 1;
+		}
+		fprintf(stderr, "Couldn't parse the livein object: %s\n", operand);
+		return 0;
 	}
 	else if(!strcmp(opcode, "org")) {
 		uint16_t norg;
@@ -208,7 +248,6 @@ int absolute(char * line) {
 
 void assemble(char * file) {
 	int linenumber = 0;
-	uint16_t address = org;
 
 	FILE* filePointer;
 	char line[ASMBUFLEN];
