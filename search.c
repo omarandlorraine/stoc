@@ -8,11 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static bool branchless = false;
-static bool position_independence = false;
-
-void set_branchless() { branchless = true; }
-
 static bool valid_operand(rewrite_t *r, instruction_t *i) {
     switch (addressing_modes[i->opcode]->mode) {
     case IMPLIED:
@@ -97,7 +92,6 @@ retry:
 }
 
 static void randomise_operand(rewrite_t *p, instruction_t *i) {
-    uint8_t opcode = i->opcode;
     addressing_mode_t *mode = addressing_modes[i->opcode];
     if (!mode)
         return;
@@ -137,11 +131,6 @@ static void remove_instr(context_t *proposal) {
             proposal->program.instructions[i + 1];
     }
     proposal->program.length--;
-}
-
-static void insert_nop(context_t *proposal) {
-    proposal->program.length = 1;
-    implied_instruction("nop", &proposal->program.instructions[0].opcode);
 }
 
 static void insert_instr(context_t *proposal) {
@@ -208,10 +197,6 @@ static bool checkem(rewrite_t *r) {
         if (!opcode_legal_p(r->instructions[i].opcode))
             return false;
 
-    if (branchless)
-        for (int i = 0; i < r->length - 1; i++)
-            if (!opcode_branch_p(r->instructions[i].opcode))
-                return false;
     return true;
 }
 
