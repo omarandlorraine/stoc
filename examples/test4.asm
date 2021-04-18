@@ -8,4 +8,4 @@
 	lsr
 	lda #$05
 	lda #$12
-	liveoutregisters	   a
+	liveout a
