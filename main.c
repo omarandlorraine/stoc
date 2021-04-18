@@ -16,10 +16,6 @@
 
 int org = 0;
 
-context_t reference;
-context_t rewrite;
-context_t proposal;
-
 uint8_t mem_read(context_t *c, uint16_t address) { return c->mem[address]; }
 
 void mem_write(context_t *c, uint16_t address, uint8_t val) {
@@ -80,21 +76,6 @@ void hexdump(context_t *c) {
     fprintf(stderr, "\n");
 }
 
-void jobs(char *tmp) {
-    int l = atoi(tmp);
-    int pid;
-    int i;
-    for (int i; i < l; i++) {
-        sleep(1);
-        if (!(pid = fork()))
-            break;
-        else
-            printf("%d\n", i);
-    }
-    srand(time(NULL) + i);
-    printf("Launching process %d\n", pid);
-}
-
 void parseoption(char *opt) {
     char tmp[100];
     strncpy(tmp, opt, 100);
@@ -105,64 +86,11 @@ void parseoption(char *opt) {
 
 	char * key = tmp + 2;
 	char * equal = strstr(tmp, "=");
-	char * colon = strstr(tmp, ":");
 
     if (equal) {
         char *val = equal + 1;
         equal[0] = '\0';
         mklbl(key, val);
-        return;
-    }
-
-    if(!strncmp("--assemble:", tmp, 11)) {
-        assemble(tmp + 11);
-        return;
-    }
-	if(!strcmp("--branchless", tmp)) {
-		set_branchless();
-	}
-    if(!strncmp("--eq:", tmp, 5)) {
-		rewrite = reference;
-        assemble(tmp + 5);
-		if(equivalence(&rewrite, &reference, 10)) {
-			printf("The two programs seem to behave identically.\n");
-		} else {
-			printf("The two programs are not equivalent.\nAbove is a list of example inputs that give rise to differing behaviours.\n");
-		}
-		hexdump(&rewrite);
-		hexdump(&reference);
-        return;
-    }
-    if(!strncmp("--reg-out:", tmp, 10)) {
-        reg_out(tmp + 10);
-        return;
-    }
-    if (!strncmp("--reg-in:", tmp, 9)) {
-        reg_in(tmp + 9);
-        return;
-    }
-    if (!strcmp("--hexdump", tmp)) {
-        hexdump(&reference);
-        return;
-    }
-    if (!strncmp("--jobs:", tmp, 7)) {
-        jobs(tmp + 7);
-        return;
-    }
-    if (!strcmp("--exh", tmp)) {
-        exhaustive(&reference);
-        return;
-    }
-    if (!strcmp("--dce", tmp)) {
-        deadcodeelim(&reference);
-        return;
-    }
-    if (!strcmp("--gen", tmp)) {
-        stoc_gen(&reference);
-        return;
-    }
-    if (!strcmp("--opt", tmp)) {
-        stoc_opt(&reference);
         return;
     }
 
