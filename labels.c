@@ -11,8 +11,8 @@ typedef struct {
 	char name[LABEL_LEN + 1];
 	uint16_t address;
 	uint16_t length;
-	bool live_in;
-	bool live_out;
+	bool livein;
+	bool liveout;
 } label_t;
 
 label_t label[MAXLABELS];
