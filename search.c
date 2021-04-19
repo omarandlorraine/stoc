@@ -261,7 +261,6 @@ void stoc_opt(context_t *reference) {
         proposal = rewrite;
         for (int j = 0; j < 100; j++) {
             if (iterate(reference, &rewrite, &proposal, &clockticks_cost)) {
-                hexdump(&proposal);
                 rewrite = proposal;
 				i = 0;
             }
