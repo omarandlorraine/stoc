@@ -5,26 +5,6 @@ We've got a few different search strategies implemented actually, and these exer
 
 To build the system, type `make`. For each architecture, (currently two or three varieties of 6502) `make` will generate the appropriate source code and compile an executable named `stoc-$arch`.
 
-An example of what you can do:
-
-```
-./stoc-6510 --org:0200 examples/test3.asm --hexdump --exh 
-; 8 instructions
-	lda #$80
-	lsr
-	lsr
-	lsr
-	lsr
-	lsr
-	lsr
-	lsr
-
-; 1 instructions
-	lda #$01
-```
-
-This run loads the program in examples/test3.asm at the address 0x0200, and disassembles it to the terminal. It then searches for another program which has the same result, and prints what it found. 
-
 ### Supported architectures
 So far, we've got a few varieties of 6502. These are:
 
@@ -32,6 +12,8 @@ So far, we've got a few varieties of 6502. These are:
 - *stoc-6510*, another NMOS 6502, and has some of the same illegal opcodes that the Commodore 64 guys use
 - *stoc-65c02*, targets the later CMOS chips with extra opcodes like `phx` and so on
 - *stoc-2a03*, basically the same as stoc-6502 but has no decimal mode. Dead-code elimination here will remove instructions `sed` and `cld`.
+
+The above list is essentially what's provided by the *fake6502* submodule. If you are interested in adding other architectures, I would suggest that the easiest way would be to graft in another emulator. At build-time, a particular emulator is linked in, and this is what determines which architecture the binary supports.
 
 ### Exhaustive search strategy
 The exhaustive search strategy (implemented in `exh.c`) tries to find a solution by iterating over all possible instructions for each instruction in the program. First, it tries all programs containing 1 instruction. Then it tries all programs containing two instructions. Then three, and keeps going in this way until it finds a program by calling the equivalence tester, when it stops and prints the program. This means that the program it finds is always the shortest possible program, as measured in lines of assembly.
@@ -43,29 +25,34 @@ I should think that we could narrow the search space down a bit in some ways:
  - consider only the commonest immediate values (This is what the GNU Superoptimiser does)
  - Not considering any code sequence which cannot occur in an optimal program (these might do daft things like `ldx #$01, dex` instead of `ldx #$00`. This would cull the search space by effectively being a peephole optimiser. I think this is what Henry Massalin did.
 
+Below is an example run. `examples/exhaustive_search_test.asm` is a program which does a load of computation and then overwrites whatever it does with a single `lda #$12` instruction at the end, so that all the preceding work is effectively discarded.
+```
+$ ./stoc-6510 examples/exhaustive_search_test.asm
+; 1 instructions
+; 2 bytes
+; 2 clockticks
+; hamming distance 0
+	lda #$12
+```
+
 ### Dead Code Elimination
 This search strategy looks for a more optimal rewrite by selecting random instructions for deletion; up to five at a time. If the program proves to be equivalent without the selected instructions, then the instructions are deleted and the same procedure is done again. Use this procedure by first loading a program and then using the `--dce` command line argument.
 
 ```
-$ ./stoc-2a03 --org:0200 examples/test5.asm --hexdump --dce
-; 5 instructions
-	clc
-	lda #$07
-	sed
-	clc
-	adc #$04
-
+$ ./stoc-2a03 examples/dead_code_elimination.asm 
 ; 3 instructions
+; 5 bytes
+; 11922 clockticks
+; hamming distance 0
 	clc
 	lda #$07
-	adc #$04
-
+	adc #$05
 ```
 
 It might be worth noting that the input procedure above contains two instances of the `clc` instructions, and only one is needed. Either one may be deleted, and it is picked at random. Running the same program again might have yielded the instructions `clc` and `lda #$02` in a different order. The `sed` instruction is not needed at all on the 2A03 because this is a chip variant which lacks the decimal mode. On other varieties of the 6502, as emulated by stoc-6510 for example, the `sed` instruction will be deemed necessary by the equivalence tester.
 
 ### Stochastic optimisation
-This search strategy walks around the search space by trying a number of mutations at a time, at sees if these mutations together either lower the cost or increase correctness (or both). If so, then the putative program (i.e. the one including the random mutations) replaces the current search space, and another walk begins. I don't know if this one will prove promising or not. Here are the possible mutations it does:
+This search strategy walks around the search space by trying a number of mutations at a time, at sees if these mutations together either lower the cost or increase correctness (or both). If so, then the putative program (i.e. the one including the random mutations) replaces the current starting position, and another walk begins. I don't know if this one will prove promising or not. Here are the possible mutations it does:
  - Insert a random instruction
  - Delete an instruction at random
  - Modify a random instruction's operand
@@ -73,36 +60,15 @@ This search strategy walks around the search space by trying a number of mutatio
  - Pick two random instructions and swap them over
  - Pick one instruction, and overwrite it entirely with another one.
 
-This will print successively better programs as it discovers them. I'm not sure I know when to let it stop. So it just tries a fazillion times. So here is an example run:
+This will stop searching when the random walks stop finding improvements. I.e., if it's tried *n* times without finding a more optimal program, the search stops and the last found known good program is printed out. So here is an example run:
 ```
-; 5 instructions
-; 0 bytes
-; 0 clockticks
-	clc
-	lda #$07
-	sed
-	clc
-	adc #$05
-
-; 4 instructions
-; 6 bytes
-; 8 clockticks
-	clc
-	lda #$07
-	clc
-	adc #$05
-
-; 3 instructions
-; 5 bytes
-; 6 clockticks
-	clc
-	lda #$07
-	adc #$05
-
-; 1 instructions
-; 2 bytes
-; 2 clockticks
-	lda #$0c
+$ ./stoc-2a03 examples/test2.asm
+; 2 instructions
+; 4 bytes
+; 4 clockticks
+; hamming distance 0
+	ldx #$23
+	ldy #$01
 ```
 
 ### Equivalence testing
