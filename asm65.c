@@ -139,11 +139,12 @@ int end_line(char ** c) {
 	return 0;
 }
 
-int directive(char * line) {
+int directive(char * line, int pass) {
 	if(!begin_line(&line)) return 0;
 	if(!read_opcode(&line)) return 0;
 
 	if(!strcmp(opcode, "optimize\n")) {
+		if(!pass) return 1;
 		if(!end_line(&line)) {
 			printf("not end of line");
 			return 0;
@@ -153,6 +154,7 @@ int directive(char * line) {
 	}
 
 	if(!strcmp(opcode, "dead_code_elimination\n")) {
+		if(!pass) return 1;
 		if(!end_line(&line)) {
 			printf("not end of line");
 			return 0;
@@ -162,6 +164,7 @@ int directive(char * line) {
 	}
 
 	if(!strcmp(opcode, "exhaustive_search\n")) {
+		if(!pass) return 1;
 		if(!end_line(&line)) {
 			printf("not end of line");
 			return 0;
@@ -287,7 +290,7 @@ void assemble(char * file) {
 			opcode[0] = '\0';
 			operand[0] = '\0';
 
-			if(directive(line)) continue;
+			if(directive(line, pass)) continue;
 
 			if(implied(line))   goto next_instruction;
 			if(immediate(line)) goto next_instruction;
