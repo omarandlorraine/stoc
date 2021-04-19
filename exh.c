@@ -12,6 +12,8 @@ void search_instruction(context_t *reference, context_t *rewrite, int offs) {
     // hexdump(rewrite);
     // If the shoe fits, print it to stdout and exit.
     if (offs == rewrite->program.length) {
+		rewrite->hamming = 0;
+		rewrite->clockticks = 0;
         if (equivalence(reference, rewrite, 0)) {
             hexdump(rewrite);
             exit(0);

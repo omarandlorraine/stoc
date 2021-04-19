@@ -121,6 +121,7 @@ int equivalence(context_t *reference, context_t *rewrite, int log) {
             }
         }
     }
+    rewrite->clockticks /= MAXITER;
     return 1;
 }
 
