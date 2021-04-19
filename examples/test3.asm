@@ -6,4 +6,5 @@
 	lsr
 	lsr
 	lsr
-	liveoutregisters	   a
+	liveout a
+	optimize

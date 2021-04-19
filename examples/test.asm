@@ -4,3 +4,4 @@
 	pla
 	liveout a
 	liveout x
+	optimize

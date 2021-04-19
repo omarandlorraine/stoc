@@ -3,4 +3,5 @@
 	sed
 	clc
 	adc #$05
-	liveoutregisters a
+	liveout a
+	dead_code_elimination

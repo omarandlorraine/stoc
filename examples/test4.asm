@@ -9,3 +9,4 @@
 	lda #$05
 	lda #$12
 	liveout a
+	optimize
