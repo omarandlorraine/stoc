@@ -12,9 +12,6 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-#define ASMBUFLEN 255
-
-int org = 0;
 
 uint8_t mem_read(context_t *c, uint16_t address) { return c->mem[address]; }
 

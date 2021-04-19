@@ -1,9 +1,9 @@
 # stoc
 Stochastic superoptimiser targetting the 6502
 
-We've got a few different search strategies implemented actually, and these exercises the emulator, equivalence tester and everything. Some assembly language files in `testing/` contain goofy code sequences that contain obvious inefficiencies. They are just there to demonstrate stoc.
+We've got a few different search strategies implemented actually, and these exercise the emulator, equivalence tester and everything. Some assembly language files in `examples/` contain goofy code sequences that contain obvious inefficiencies. They are just there to demonstrate stoc.
 
-To build the system, type `make`. For each architecture, (currently two or three varieties of 6502) `make` will generate the appropriate source code and compile an executable named `stoc-$arch`.
+To build the system, type `make`. For each architecture, (currently a few varieties of 6502) `make` will generate the appropriate source code and compile an executable named `stoc-$arch`.
 
 ### Supported architectures
 So far, we've got a few varieties of 6502. These are:
