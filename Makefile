@@ -49,19 +49,23 @@ cppcheck: $(GENERATED)
 format:
 	clang-format -style="{BasedOnStyle: llvm, IndentWidth: 4}" -i *.c
 
+.PHONY: fake6502
+fake6502:
+	make -C fake6502
+
 # The executables
 stoc-6502: $(BUILD_DIR)gen-6502.o $(OBJECTS)
-	make -C fake6502/ fake6502.o
-	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/fake6502.o
+	make fake6502
+	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/build/fake6502.o
 
 stoc-6510: $(BUILD_DIR)gen-6510.o $(OBJECTS)
-	make -C fake6502/ fake6502.o
-	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/fake6502.o
+	make fake6502
+	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/build/fake6502.o
 
 stoc-2a03: $(BUILD_DIR)gen-2a03.o $(OBJECTS)
-	make -C fake6502/ fake2a03.o
-	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/fake2a03.o
+	make fake6502
+	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/build/fake2a03.o
 
 stoc-65c02: $(BUILD_DIR)gen-65c02.o $(OBJECTS)
-	make -C fake6502/ fake65c02.o
-	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/fake65c02.o
+	make fake6502
+	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/build/fake65c02.o
