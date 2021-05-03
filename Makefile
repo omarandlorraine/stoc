@@ -1,4 +1,4 @@
-CC=clang
+CC=gcc
 CFLAGS=-g -Wall -Werror -pedantic
 LDOPTS = -lreadline
 ALL_MACHINES = stoc-6502 stoc-2a03 stoc-6510 stoc-65c02
@@ -51,7 +51,7 @@ format:
 
 .PHONY: fake6502
 fake6502:
-	make -C fake6502
+	make -C fake6502 default
 
 # The executables
 stoc-6502: $(BUILD_DIR)gen-6502.o $(OBJECTS)
