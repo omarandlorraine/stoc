@@ -43,7 +43,7 @@ love:
 
 .PHONY: cppcheck
 cppcheck: $(GENERATED)
-	cppcheck *.c *.h
+	cppcheck --enable=all *.c *.h
 
 .PHONY: format
 format:
