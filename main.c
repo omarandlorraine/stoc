@@ -72,13 +72,14 @@ void hexdump(context_t *c) {
 }
 
 void help() {
-    printf("Usage:\n\tstoc-$arch [options...] decl_file search_strategy\n");
+    printf("Usage:\n\tstoc-$arch [options...] decl_file [actions...]\n");
     printf("\nPossible options:\n\t-O   optimize for speed, this is the "
            "default one\n");
     printf("\t-Os  optimize for size\n");
-    printf("\nPossible search strategies:\n\t.dce  eliminate dead code\n");
+    printf("\nPossible actions:\n\t.dce  eliminate dead code\n");
     printf("\t.gen  stochastically generate another program\n");
     printf("\t.opt  stochastically optimize the existing program\n");
+    printf("\t.dis  disassemble the program in the decl_file\n");
     exit(1);
 }
 
@@ -96,6 +97,11 @@ void parseoption(char *opt) {
 }
 
 void search(char *opt, context_t *c) {
+    if (!strcmp(opt, ".dis")) {
+        hexdump(c);
+        return;
+    }
+
     if (!strcmp(opt, ".dce")) {
         deadcodeelim(c);
         return;
@@ -128,7 +134,6 @@ int main(int argc, char **argv) {
         help();
 
     readfile(argv[i++], &c);
-    hexdump(&c);
     measure(&c);
 
     for (; i < argc; i++) {
