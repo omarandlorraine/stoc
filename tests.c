@@ -1,17 +1,27 @@
 #include "tests.h"
+#include "decl.h"
 #include "emulator.h"
 #include "main.h"
-#include "reg.h"
 #include "stoc.h"
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+// How many test cases should we keep in memory?
+#define TESTCASE_NO 10000
+
+// How big is each test case
+#define TESTCASE_SZ 17
 
 // How many times are we going to try throwing random numbers at the routine?
 #define MAXITER 1000
 
 // For how many cycles may the routine run?
 #define COMPUTEBUDGET 10000
+
+static int num_test_cases = 0;
+
+uint8_t *testcases[TESTCASE_NO];
 
 void install(context_t *c) {
     rewrite_t *r = &c->program;
@@ -24,9 +34,9 @@ void install(context_t *c) {
             mem_write(c, addr++, r->instructions[i].operand & 0x00ff);
         if (opcode_length(instr) > 2)
             mem_write(c, addr++, r->instructions[i].operand >> 8);
-        r->end = addr;
     }
     r->blength = addr - r->org;
+    r->end = r->org + r->blength;
 }
 
 int run(context_t *c) {
@@ -44,128 +54,80 @@ int run(context_t *c) {
     return TOOK_TOO_LONG;
 }
 
-void run_both(context_t *reference, context_t *rewrite) {
-    uint8_t a;
-    uint8_t x;
-    uint8_t y;
-    uint8_t f;
-    uint8_t s;
+void print_test_case(uint8_t *test, size_t length) {
+    printf("testcase ");
+    for (int i = 0; i < length; i++) {
+        printf("$%02x ", test[i]);
+    }
 
-    a = rand();
-    x = rand();
-    y = rand();
-    f = rand();
-    s = rand();
-
-    rewrite->a = reference->a = a;
-    rewrite->x = reference->x = x;
-    rewrite->y = reference->y = y;
-    rewrite->s = reference->s = s;
-    rewrite->flags = reference->flags = f;
-
-    rewrite->exitcode |= run(rewrite);
-    reference->exitcode |= run(reference);
-
-    rewrite->hamming += reg_cmp_out(reference, rewrite);
+    printf("\n");
 }
 
-void test_both(context_t *reference, context_t *rewrite_a,
-               context_t *rewrite_b) {
-    uint8_t a;
-    uint8_t x;
-    uint8_t y;
-    uint8_t f;
-    uint8_t s;
-
-    a = rand();
-    x = rand();
-    y = rand();
-    f = rand();
-    s = rand();
-
-    rewrite_a->a = rewrite_b->a = reference->a = a;
-    rewrite_a->x = rewrite_b->x = reference->x = x;
-    rewrite_a->y = rewrite_b->y = reference->y = y;
-    rewrite_a->s = rewrite_b->s = reference->s = s;
-    rewrite_a->flags = rewrite_b->flags = reference->flags = f;
-
-    rewrite_a->exitcode |= run(rewrite_a);
-    rewrite_b->exitcode |= run(rewrite_b);
-    reference->exitcode |= run(reference);
-
-    rewrite_a->hamming += reg_cmp_out(reference, rewrite_a);
-    rewrite_b->hamming += reg_cmp_out(reference, rewrite_b);
+int run_test_case(uint8_t *test, context_t *rewrite) {
+    decl_t *d = rewrite->decl;
+    while (d) {
+        if (d->fn(rewrite, d, &test))
+            return 1;
+        d = d->next;
+    }
+    return 0;
 }
 
-int equivalence(context_t *reference, context_t *rewrite, int log) {
+int create_test_case(context_t *reference, context_t *rewrite) {
+    uint8_t *tc = malloc(TESTCASE_SZ);
+
+    uint8_t *test = tc;
+    decl_t *d = reference->decl;
+    while (d) {
+        d->setup(reference, d, &test);
+        d = d->next;
+    }
+
+    if (num_test_cases < TESTCASE_NO)
+        testcases[num_test_cases++] = tc;
+    //print_test_case(tc, test - tc);
+    return run_test_case(tc, rewrite);
+}
+
+int equivalence(context_t *reference, context_t *rewrite) {
     install(reference);
     install(rewrite);
-    for (int i = 0; i < MAXITER; i++) {
-        uint8_t a = rand();
-        uint8_t x = rand();
-        uint8_t y = rand();
-        uint8_t f = rand();
 
-        rewrite->a = reference->a = a;
-        rewrite->x = reference->x = x;
-        rewrite->y = reference->y = y;
-        rewrite->flags = reference->flags = f;
+    rewrite->clockticks = 0;
 
-        run_both(reference, rewrite);
-
-        if (rewrite->hamming) {
-            if (log--) {
-                printf("a = %02x, x = %02x, y = %02x\n", a, x, y);
-            } else {
-                return 0;
-            }
+    int i;
+    for (i = 0; i < num_test_cases; i++) {
+        if (run_test_case(testcases[i], rewrite)) {
+            return 0;
         }
     }
-    rewrite->clockticks /= MAXITER;
-    return 1;
+    return !create_test_case(reference, rewrite);
 }
 
-void measure(context_t *reference, context_t *rewrite_a) {
-    install(reference);
-    install(rewrite_a);
+void measure(context_t *c) {
+    install(c);
+    if (!num_test_cases) {
+        uint8_t *tc = malloc(TESTCASE_SZ);
 
-    rewrite_a->clockticks = 0;
-    reference->clockticks = 0;
+        uint8_t *test = tc;
+        decl_t *d = c->decl;
+        while (d) {
+            d->setup(c, d, &test);
+            d = d->next;
+        }
 
-    rewrite_a->exitcode = 0;
-    reference->exitcode = 0;
+        if (num_test_cases < TESTCASE_NO)
+            testcases[num_test_cases++] = tc;
+        //print_test_case(tc, test - tc);
+    }
 
-    rewrite_a->hamming = 0;
+    c->clockticks = 0;
+    c->exitcode = 0;
 
     int i;
-    for (i = 0; i < MAXITER; i++) {
-        run_both(reference, rewrite_a);
+    for (i = 0; i < num_test_cases; i++) {
+        if (run_test_case(testcases[i], c))
+            break;
     }
-    reference->clockticks /= i;
-    rewrite_a->clockticks /= i;
-}
-
-void measure_two(context_t *reference, context_t *rewrite_a,
-                 context_t *rewrite_b) {
-    install(reference);
-    install(rewrite_a);
-    install(rewrite_b);
-
-    rewrite_a->clockticks = 0;
-    rewrite_b->clockticks = 0;
-    reference->clockticks = 0;
-
-    rewrite_a->exitcode = 0;
-    rewrite_b->exitcode = 0;
-    reference->exitcode = 0;
-
-    rewrite_a->hamming = 0;
-
-    int i;
-    for (i = 0; i < MAXITER; i++) {
-        test_both(reference, rewrite_a, rewrite_b);
-    }
-    reference->clockticks /= i;
-    rewrite_a->clockticks /= i;
-    rewrite_b->clockticks /= i;
+    c->clockticks /= (i + 1);
 }

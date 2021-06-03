@@ -1,9 +1,9 @@
-CC=clang
+CC=gcc
 CFLAGS=-g -Wall -Werror -pedantic
 LDOPTS = -lreadline
 ALL_MACHINES = stoc-6502 stoc-2a03 stoc-6510 stoc-65c02
 BUILD_DIR := build/
-SOURCES = tests.c labels.c asm65.c reg.c main.c instr.c stoc.c search.c exh.c
+SOURCES = tests.c main.c stoc.c search.c asm.c decl.c optimization.c pick.c
 GENERATED = gen-6502.c gen-6510.c gen-65c02.c gen-2a03.c
 GENOBJECTS = $(GENERATED:%.c=$(BUILD_DIR)%.o)
 OBJECTS = $(SOURCES:%.c=$(BUILD_DIR)%.o)
@@ -43,7 +43,7 @@ love:
 
 .PHONY: cppcheck
 cppcheck: $(GENERATED)
-	cppcheck *.c *.h
+	cppcheck --enable=all *.c *.h
 
 .PHONY: format
 format:
@@ -51,7 +51,7 @@ format:
 
 .PHONY: fake6502
 fake6502:
-	make -C fake6502
+	make -C fake6502 default
 
 # The executables
 stoc-6502: $(BUILD_DIR)gen-6502.o $(OBJECTS)
