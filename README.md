@@ -15,8 +15,11 @@ So far, we've got a few varieties of 6502. These are:
 
 The above list is essentially what's provided by the *fake6502* submodule. If you are interested in adding other architectures, I would suggest that the easiest way would be to graft in another emulator. At build-time, a particular emulator is linked in, and this is what determines which architecture the binary supports.
 
+### Theory of operation
+The basic idea with this is to generate better programs than traditional compilers can, by copying a working program and making many small random successive changes to it. If the copy is found to be equivalent (or close enough), then it might get written to the standard output. Otherwise, another attempt is made, until an improvement is found.
+
 ### Dead Code Elimination
-This search strategy looks for a more optimal rewrite by selecting random instructions for deletion; up to five at a time (this is to give pairs of instructions, such as a `pha` and corresponding `pla`, a chance to get deleted together). If the program proves to be equivalent without the selected instructions, then the instructions are deleted and the same procedure is done again. Use this procedure by first loading a program and then using the `--dce` command line argument.
+This search strategy looks for a more optimal rewrite by selecting random instructions for deletion; up to five at a time (this is to give pairs of instructions, such as a `pha` and corresponding `pla`, a chance to get deleted together). If the program proves to be equivalent without the selected instructions, then the instructions are deleted and the same procedure is done again. Use this procedure by using the `.dce` action.
 
 ```
 $ ./stoc-2a03 examples/add_two_constants.stoc .dis .dce
@@ -51,7 +54,7 @@ This search strategy walks around the search space by trying a number of mutatio
  - Pick two random instructions and swap them over
  - Pick one instruction, and overwrite it entirely with another one.
 
-This will stop searching when the random walks stop finding improvements. I.e., if it's tried *n* times without finding a more optimal program, the search stops and the last found known good program is printed out. So here is an example run:
+This will stop searching when the random walks stop finding improvements. I.e., if it's tried *n* times without finding a more optimal program, the search stops and the last found known good program is printed out. Invoke this search with the `.opt` action. So here is an example run:
 ```
 $ ./stoc-2a03 examples/add_two_constants.stoc .dis .opt
 ; starting at $2000
