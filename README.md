@@ -78,4 +78,8 @@ $ ./stoc-2a03 examples/add_two_constants.stoc .dis .opt
 	lda #$0c
 
 ```
-The search has discovered that adding two constants together is equivalent to loading the sum of those constants, and suggested a replacement program that does so.
+
+There are a few ways to reach the second program from the first; each one is a random walkk through the search space:
+- Maybe stoc putatively inserted `lda #$0c` at the end of the program, and then deleted the rest of the instructions, having established that they are effectively dead code.
+- Maybe stoc putatively altered `lda #$07` to `lda #$0c`, and altered `adc #$05` to something benign, and then deleted the rest of the instructions, having established that they are effectively dead code.
+Whatever the case, the search has discovered that adding two constants together is equivalent to loading the sum of those constants, and suggested a replacement program that does so.
