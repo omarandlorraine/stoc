@@ -13,10 +13,14 @@ So far, we've got a few varieties of 6502. These are:
 - *stoc-65c02*, targets the later CMOS chips with extra opcodes like `phx` and so on
 - *stoc-2a03*, basically the same as stoc-6502 but has no decimal mode. Dead-code elimination here will remove instructions `sed` and `cld`.
 
-The above list is essentially what's provided by the *fake6502* submodule. If you are interested in adding other architectures, I would suggest that the easiest way would be to graft in another emulator. At build-time, a particular emulator is linked in, and this is what determines which architecture the binary supports.
+The above list is essentially what's provided by the *fake6502* submodule. If you are interested in adding other architectures, I would suggest that the easiest way would be to graft in another emulator. At build-time, a particular emulator is linked in, and this is what determines which architecture the binary supports. A separate program is built for each supported architecture.
 
 ### Theory of operation
 The basic idea with this is to generate better programs than traditional compilers can, by copying a working program and making many small random successive changes to it. If the copy is found to be equivalent (or close enough), then it might get written to the standard output. Otherwise, another attempt is made, until an improvement is found.
+
+There are a few different ways we can introduce mutations into the program, and these have names such as Dead Code Elimination, or `.dce`, Stochastic Optimisation, or `.opt`, etc. They are described in more detail below. 
+
+How can we see if two programs are equivalent? We can spam them with random numbers, and then check whether they produce the same output. Earlier versions of stoc worked in this way, but there was a slight chance that the random numbers didn't exercise the entire program. This could lead to a buggy program being output. To mitigate this risk, I've introduced the concept of testcases. A testcase is partially derived from the RNG and partially derived from the reference program. A testcase specifies what output the program should yield given a specific input. stoc will remember a number of these, and test each putative program against them all. I would guess that 99% of the garbage produced by the search algorithm is caught by the first few testcases.
 
 ### Dead Code Elimination
 This search strategy looks for a more optimal rewrite by selecting random instructions for deletion; up to five at a time (this is to give pairs of instructions, such as a `pha` and corresponding `pla`, a chance to get deleted together). If the program proves to be equivalent without the selected instructions, then the instructions are deleted and the same procedure is done again. Use this procedure by using the `.dce` action.
