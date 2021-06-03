@@ -3,9 +3,7 @@
 #include <inttypes.h>
 
 #define REWRITE_LEN 50
-#define LABEL_LEN   20
 #define DATA_LEN    20
-
 
 #define ABSOLUTE 0
 #define ABSOLUTE_X 1
@@ -71,8 +69,7 @@ typedef uint8_t  data_t;
 typedef struct i1 {
 	addr_t address;
 	uint8_t opcode;
-	int target;
-	int operand;
+	uint16_t operand;
 } instruction_t;
 
 typedef struct r1 {
@@ -93,16 +90,15 @@ typedef struct c1 {
 	uint8_t s;
 	uint16_t pc;
     long long int clockticks;
-	long long int hamming;
     rewrite_t program;
 	data_t mem[ADDR_SPACE];
 	uint8_t memf[ADDR_SPACE];
 	uint16_t ea;
 	uint8_t opcode;
 	int exitcode;
+	struct _decl_t * decl;
 } context_t;
 
 void init_program(rewrite_t * r);
-void install_program(rewrite_t * r);
 extern void (*optable[256])(context_t * c);
 char *opnames[256];

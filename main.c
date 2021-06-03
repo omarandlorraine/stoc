@@ -1,8 +1,6 @@
 #include "main.h"
-#include "exh.h"
-#include "labels.h"
-#include "asm65.h"
-#include "reg.h"
+#include "asm.h"
+#include "optimization.h"
 #include "search.h"
 #include "stoc.h"
 #include "tests.h"
@@ -21,9 +19,9 @@ void mem_write(context_t *c, uint16_t address, uint8_t val) {
 
 void hexdump(context_t *c) {
     rewrite_t *r = &c->program;
+    printf("; starting at $%04x\n", r->org);
     printf("; %d instructions\n", r->length);
     printf("; %d bytes\n; %lld clockticks\n", r->blength, c->clockticks);
-    printf("; hamming distance %lld\n", c->hamming);
     for (int i = 0; i < r->length; i++) {
         uint8_t instr = r->instructions[i].opcode;
         if (is_implied_instruction(instr)) {
@@ -73,39 +71,68 @@ void hexdump(context_t *c) {
     fprintf(stderr, "\n");
 }
 
-void parseoption(char *opt) {
-    char tmp[100];
-    strncpy(tmp, opt, 100);
-
-	if(strncmp("--", opt, 2)) {
-		assemble(opt);
-	}
-
-	char * key = tmp + 2;
-	char * equal = strstr(tmp, "=");
-
-    if (equal) {
-        char *val = equal + 1;
-        equal[0] = '\0';
-        mklbl(key, val);
-        return;
-    }
-
-    fprintf(stderr, "Unknown option %s\n", opt);
+void help() {
+    printf("Usage:\n\tstoc-$arch [options...] decl_file search_strategy\n");
+    printf("\nPossible options:\n\t-O   optimize for speed, this is the "
+           "default one\n");
+    printf("\t-Os  optimize for size\n");
+    printf("\nPossible search strategies:\n\t.dce  eliminate dead code\n");
+    printf("\t.gen  stochastically generate another program\n");
+    printf("\t.opt  stochastically optimize the existing program\n");
     exit(1);
 }
 
-int main(int argc, char ** argv) {
-	int i = 0;
-	srand(time(NULL));
-	for(i = 1; i < argc; i++) {
-		char * opt = argv[i];
-		if(!strncmp(opt, "--", 2)) parseoption(opt);
-		else assemble(opt);
-	}
+void parseoption(char *opt) {
+    if (!strcmp(opt, "-Os")) {
+        set_optimization(optimize_size);
+        return;
+    }
+    if (!strcmp(opt, "-O")) {
+        set_optimization(optimize_speed);
+        return;
+    }
+    fprintf(stderr, "Unknown option %s\n", opt);
+    help();
+}
 
-    uint16_t value;
-    if (getlbl("hello", &value)) {
-        printf("found it %u\n", value);
+void search(char *opt, context_t *c) {
+    if (!strcmp(opt, ".dce")) {
+        deadcodeelim(c);
+        return;
+    }
+
+    if (!strcmp(opt, ".opt")) {
+        stoc_opt(c);
+        return;
+    }
+
+    fprintf(stderr, "Unknown search strategy %s\n", opt);
+    help();
+}
+
+int main(int argc, char **argv) {
+    int i;
+    srand(time(NULL));
+
+    context_t c;
+    c.clockticks = 0;
+    set_optimization(optimize_speed);
+
+    for (i = 1; i < argc; i++) {
+        char *opt = argv[i];
+        if (opt[0] != '-')
+            break;
+        parseoption(opt);
+    }
+    if (!argv[i])
+        help();
+
+    readfile(argv[i++], &c);
+    hexdump(&c);
+    measure(&c);
+
+    for (; i < argc; i++) {
+        char *opt = argv[i];
+        search(opt, &c);
     }
 }
