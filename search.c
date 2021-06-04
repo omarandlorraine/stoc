@@ -94,7 +94,9 @@ static void modify_operand(context_t *proposal) {
     int offs = rnd % (proposal->program.length);
     if (!randomise_operand(&proposal->program,
                            &proposal->program.instructions[offs]))
-        exit(printf("Could not modify operand, opcode %02x, for instruction number %d, see search.c line %d\n", proposal->program.instructions[offs].opcode, offs,
+        exit(printf("Could not modify operand, opcode %02x, for instruction "
+                    "number %d, see search.c line %d\n",
+                    proposal->program.instructions[offs].opcode, offs,
                     __LINE__));
 }
 
@@ -112,14 +114,14 @@ static void modify_opcode(context_t *proposal) {
 }
 
 static void replace_instr(context_t *proposal) {
-	if (proposal->program.length == 0)
-		return;
+    if (proposal->program.length == 0)
+        return;
 
-	int offs = rand() % (proposal->program.length);
-	do {
-		proposal->program.instructions[offs].opcode = random_opcode();
-	} while (!randomise_operand(&proposal->program,
-				&proposal->program.instructions[offs]));
+    int offs = rand() % (proposal->program.length);
+    do {
+        proposal->program.instructions[offs].opcode = random_opcode();
+    } while (!randomise_operand(&proposal->program,
+                                &proposal->program.instructions[offs]));
 }
 
 static void swap_instrs(context_t *proposal) {
@@ -151,27 +153,27 @@ static void random_mutation(context_t *proposal) {
             6; // Keep on incrementing this until all mutations get tested okay.
     switch (r) {
     case 0:
-        //printf("remove_instr(proposal)\n");
+        // printf("remove_instr(proposal)\n");
         remove_instr(proposal);
         break;
     case 1:
-        //printf("modify_opcode(proposal)\n");
+        // printf("modify_opcode(proposal)\n");
         modify_opcode(proposal);
         break;
     case 2:
-        //printf("modify_operand(proposal)\n");
+        // printf("modify_operand(proposal)\n");
         modify_operand(proposal);
         break;
     case 3:
-        //printf("swap_instrs(proposal)\n");
+        // printf("swap_instrs(proposal)\n");
         swap_instrs(proposal);
         break;
     case 4:
-        //printf("replace_instr(proposal)\n");
+        // printf("replace_instr(proposal)\n");
         replace_instr(proposal);
         break;
     case 5:
-        //printf("insert_instr(proposal)\n");
+        // printf("insert_instr(proposal)\n");
         insert_instr(proposal);
         break;
     }
@@ -180,8 +182,8 @@ static void random_mutation(context_t *proposal) {
 static bool iterate(context_t *reference, context_t *rewrite,
                     context_t *proposal) {
     random_mutation(proposal);
-    //hexdump(proposal);
-    //printf("============================================\n");
+    // hexdump(proposal);
+    // printf("============================================\n");
 
     if (!checkem(&proposal->program))
         return false;
