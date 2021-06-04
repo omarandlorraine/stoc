@@ -21,8 +21,6 @@ retry:
     return opcode;
 }
 
-// FIXME: Never ignore this return value.
-#pragma GCC diagnostic error "-Wunused-result"
 static bool randomise_operand(rewrite_t *p, instruction_t *i) {
     addressing_mode_t *mode = addressing_modes[i->opcode];
     if (!mode)
