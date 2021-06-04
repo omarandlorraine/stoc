@@ -118,7 +118,6 @@ void measure(context_t *c) {
 
         if (num_test_cases < TESTCASE_NO)
             testcases[num_test_cases++] = tc;
-        // print_test_case(tc, test - tc);
     }
 
     c->clockticks = 0;
