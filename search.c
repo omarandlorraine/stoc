@@ -22,6 +22,7 @@ retry:
 }
 
 static bool randomise_operand(rewrite_t *p, instruction_t *i) {
+	// TODO: Can we think of a more sensible solution than a horrible hunk of a switch statement?
     addressing_mode_t *mode = addressing_modes[i->opcode];
     if (!mode)
         return false;
