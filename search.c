@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static pick_t zp_addresses;
+
 static uint8_t random_opcode() {
     uint8_t opcode;
 retry:
@@ -22,7 +24,8 @@ retry:
 }
 
 static bool randomise_operand(rewrite_t *p, instruction_t *i) {
-	// TODO: Can we think of a more sensible solution than a horrible hunk of a switch statement?
+    // TODO: Can we think of a more sensible solution than a horrible hunk of a
+    // switch statement?
     addressing_mode_t *mode = addressing_modes[i->opcode];
     if (!mode)
         return false;
@@ -39,7 +42,7 @@ static bool randomise_operand(rewrite_t *p, instruction_t *i) {
     case ZERO_PAGE:
     case ZERO_PAGE_X:
     case ZERO_PAGE_Y:
-        return random_zp_address(&i->operand);
+        return pick_at_random(&zp_addresses, &i->operand);
 
     case INDIRECT:
     case ABSOLUTE:
@@ -250,4 +253,18 @@ void deadcodeelim(context_t *reference) {
         }
     }
     hexdump(&rewrite);
+}
+
+void search_init() {
+
+    // We're going to find all defined zero-page addresses and add them to the
+    // zp_addresses pick.
+    initialize_pick(&zp_addresses);
+
+    iterator_t addr_it;
+    uint16_t address;
+
+    for (iterator_init(&addresses, &addr_it); pick_iterate(&addr_it, &address);)
+        if (address < 256)
+            pick_insert(&zp_addresses, address);
 }

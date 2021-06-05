@@ -1,34 +1,30 @@
+#include "pick.h"
 #include "decl.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define MAXADDRESSES 50
 
-typedef struct {
-    uint16_t vals[MAXADDRESSES];
-    int count;
-} pick_t;
+pick_t constants;
+pick_t addresses;
+pick_t entrypoints;
 
-static pick_t constants;
-static pick_t zp_addresses;
-static pick_t addresses;
-static pick_t entrypoints;
+void initialize_pick(pick_t *pick) { pick->count = 0; }
 
-static void insert(pick_t *pick, uint16_t val) {
+void pick_insert(pick_t *pick, uint16_t val) {
     for (int offs = 0; offs < pick->count; offs++) {
         if (pick->vals[offs] == val)
             return;
     }
     pick->vals[pick->count++] = val;
 
-    if (pick->count > MAXADDRESSES) {
+    if (pick->count > MAXPICKSIZE) {
         printf("Too many!");
         exit(1);
     }
 }
 
-static bool pick(pick_t *pick, uint16_t *out) {
+bool pick_at_random(pick_t *pick, uint16_t *out) {
     if (pick->count) {
         int p = rand() % pick->count;
         *out = pick->vals[p];
@@ -37,35 +33,43 @@ static bool pick(pick_t *pick, uint16_t *out) {
     return false;
 }
 
-bool random_address(uint16_t *out) { return pick(&addresses, out); }
-bool random_zp_address(uint16_t *out) { return pick(&zp_addresses, out); }
+bool random_address(uint16_t *out) { return pick_at_random(&addresses, out); }
 
-bool random_constant(uint16_t *out) { return pick(&constants, out); }
+bool random_constant(uint16_t *out) { return pick_at_random(&constants, out); }
 
-void pickinit(decl_t *d) {
-    constants.count = 0;
-    addresses.count = 0;
-    zp_addresses.count = 0;
-    entrypoints.count = 0;
+void iterator_init(pick_t *pick, iterator_t *iter) {
+    iter->pick = pick;
+    iter->current = 0;
+}
 
+bool pick_iterate(iterator_t *iter, uint16_t *out) {
+    if (iter->current > iter->pick->count)
+        return false;
+    *out = iter->pick->vals[iter->current++];
+    return true;
+}
+
+void pick_set_all_constants() {
+    initialize_pick(&constants);
+    for (int i = 0; i < 256; i++) {
+        pick_insert(&constants, i);
+    }
+}
+
+void pick_set_common_constants() {
+    initialize_pick(&constants);
     // the most common constant values
     for (int i = -16; i < 17; i++)
-        insert(&constants, i);
+        pick_insert(&constants, i);
 
     for (uint8_t i = 1; i; i <<= 1)
-        insert(&constants, i);
+        pick_insert(&constants, i);
+}
 
-    while (d) {
+void pick_add_address(uint16_t addr) { pick_insert(&constants, addr); }
 
-        if (d->fn == live_out_memory && d->start < 256)
-            insert(&zp_addresses, d->start);
-        if (d->fn == live_in_memory && d->start < 256)
-            insert(&zp_addresses, d->start);
-
-        if (d->fn == live_out_memory)
-            insert(&addresses, d->start);
-        if (d->fn == live_in_memory)
-            insert(&addresses, d->start);
-        d = d->next;
-    }
+void pickinit() {
+    pick_set_common_constants();
+    initialize_pick(&addresses);
+    initialize_pick(&entrypoints);
 }
