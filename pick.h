@@ -1,10 +1,11 @@
+#pragma once
 #include <stdint.h>
 #include <stdbool.h>
 #define MAXPICKSIZE 50
 
 typedef struct {
-	uint16_t vals[MAXPICKSIZE];
 	int count;
+	uint16_t vals[MAXPICKSIZE];
 } pick_t;
 
 typedef struct {

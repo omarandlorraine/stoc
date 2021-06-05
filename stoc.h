@@ -1,6 +1,7 @@
 #pragma once
 #include <stdbool.h>
 #include <inttypes.h>
+#include "pick.h"
 
 #define REWRITE_LEN 50
 
@@ -40,25 +41,19 @@ int is_zero_page_y_instruction(uint8_t op);
 int is_relative_instruction(uint8_t op);
 bool relative_instruction(char * op, uint8_t * out);
 
-typedef struct {
-	int len;
-	int mode;
-	uint8_t * opcodes;
-} addressing_mode_t;
-
-extern addressing_mode_t mode_absolute;
-extern addressing_mode_t mode_absolute_x;
-extern addressing_mode_t mode_absolute_y;
-extern addressing_mode_t mode_indirect;
-extern addressing_mode_t mode_zero_page;
-extern addressing_mode_t mode_zero_page_x;
-extern addressing_mode_t mode_zero_page_y;
-extern addressing_mode_t mode_indirect_x;
-extern addressing_mode_t mode_indirect_y;
-extern addressing_mode_t mode_immediate;
-extern addressing_mode_t mode_implied;
-extern addressing_mode_t mode_relative;
-extern addressing_mode_t* addressing_modes[256];
+extern pick_t mode_absolute;
+extern pick_t mode_absolute_x;
+extern pick_t mode_absolute_y;
+extern pick_t mode_indirect;
+extern pick_t mode_zero_page;
+extern pick_t mode_zero_page_x;
+extern pick_t mode_zero_page_y;
+extern pick_t mode_indirect_x;
+extern pick_t mode_indirect_y;
+extern pick_t mode_immediate;
+extern pick_t mode_implied;
+extern pick_t mode_relative;
+extern pick_t* addressing_modes[256];
 
 
 typedef uint16_t addr_t;

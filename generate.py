@@ -39,10 +39,9 @@ print("#include <stdlib.h>")
 for m in lengths:
 	mode = m.replace('-', '_')
 	codes = sorted(["0x%s" % o.codepoint for o in opcodes if o.mode == m])
-	print("uint8_t mode_%s_ops[] = {%s};" % (mode, ", ".join(codes)))
-	print("addressing_mode_t mode_%s = {%d, %s, mode_%s_ops};" % (mode, len(codes), mode.upper(), mode))
+	print("pick_t mode_%s = {%d, {%s}};" % (mode, len(codes), ", ".join(codes)))
 
-print("addressing_mode_t* addressing_modes[] = {")
+print("pick_t * addressing_modes[] = {")
 for c in range(256):
 	o = [o.mode for o in opcodes if int(o.codepoint, 16) == c]
 	if len(o):
