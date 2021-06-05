@@ -9,14 +9,14 @@ opcodes = []
 
 lengths = {
         "absolute": 3, 
-        "absolute-x": 3,
-        "absolute-y": 3,
+        "absolute_x": 3,
+        "absolute_y": 3,
         "indirect": 3,
-        "zero-page": 2, 
-        "zero-page-x": 2, 
-        "zero-page-y": 2,
-        "indirect-x": 2,
-        "indirect-y": 2,
+        "zero_page": 2, 
+        "zero_page_x": 2, 
+        "zero_page_y": 2,
+        "indirect_x": 2,
+        "indirect_y": 2,
         "immediate": 2,
         "implied": 1,
         "relative": 2}
@@ -37,15 +37,14 @@ print("#include <stdlib.h>")
 
 # modes
 for m in lengths:
-	mode = m.replace('-', '_')
 	codes = sorted(["0x%s" % o.codepoint for o in opcodes if o.mode == m])
-	print("pick_t mode_%s = {%d, {%s}};" % (mode, len(codes), ", ".join(codes)))
+	print("pick_t mode_%s = {%d, {%s}};" % (m, len(codes), ", ".join(codes)))
 
 print("pick_t * addressing_modes[] = {")
 for c in range(256):
 	o = [o.mode for o in opcodes if int(o.codepoint, 16) == c]
 	if len(o):
-		print("\t&mode_%s," % o[0].replace('-', '_'))
+		print("\t&mode_%s," % o[0])
 	else:
 		print("\t0,")
 print("};")
@@ -78,14 +77,13 @@ print("\tdefault:\n\t\treturn false;\n\t}")
 print("}")
 
 for addr in lengths:
-	mode = addr.replace('-', '_')
-	print("int is_%s_instruction(uint8_t op) {" % mode)
+	print("int is_%s_instruction(uint8_t op) {" % addr)
 	print("\tswitch(op) {")
 	for o in [o for o in opcodes if o.mode == addr]:
 		print("\tcase 0x%s:" % o.codepoint)
 	print("\t\treturn 1;\n\tdefault:\t\treturn 0;")
 	print("\t}\n}")
-	print("bool %s_instruction(char * op, uint8_t * out) {" % mode)
+	print("bool %s_instruction(char * op, uint8_t * out) {" % addr)
 	for o in [o for o in opcodes if o.mode == addr]:
 		print("\tif(!strncmp(op, \"%s\", %u)) { *out = 0x%s; return true; }" % (o.mnemonic, len(o.mnemonic), o.codepoint))
 	print("\treturn 0;")
