@@ -1,6 +1,7 @@
 #include "main.h"
 #include "asm.h"
 #include "optimization.h"
+#include "pick.h"
 #include "search.h"
 #include "stoc.h"
 #include "tests.h"
@@ -119,6 +120,9 @@ void search(char *opt, context_t *c) {
 int main(int argc, char **argv) {
     int i;
     srand(time(NULL));
+
+    pickinit();
+    pick_set_common_constants();
 
     context_t c;
     c.clockticks = 0;

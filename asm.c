@@ -173,5 +173,4 @@ void readfile(char *filename, context_t *reference) {
     }
     fclose(filePointer);
     reference->decl = d;
-    pickinit(reference->decl);
 }
