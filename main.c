@@ -72,11 +72,11 @@ void hexdump(context_t *c) {
     fprintf(stderr, "\n");
 }
 
-void help() {
-    printf("Usage:\n\tstoc-$arch [options...] decl_file [actions...]\n");
-    printf("\nPossible options:\n\t-O   optimize for speed, this is the "
+void help(char * progname) {
+    printf("Usage:\n\t%s [options...] decl_file [actions...]\n", progname);
+    printf("\nPossible options:\n\t-O    optimize for speed, this is the "
            "default one\n");
-    printf("\t-Os  optimize for size\n");
+    printf("\t-Os   optimize for size\n");
     printf("\nPossible actions:\n\t.dce  eliminate dead code\n");
     printf("\t.gen  stochastically generate another program\n");
     printf("\t.opt  stochastically optimize the existing program\n");
@@ -84,7 +84,7 @@ void help() {
     exit(1);
 }
 
-void parseoption(char *opt) {
+void parseoption(char *opt, char * progname) {
     if (!strcmp(opt, "-Os")) {
         set_optimization(optimize_size);
         return;
@@ -94,10 +94,10 @@ void parseoption(char *opt) {
         return;
     }
     fprintf(stderr, "Unknown option %s\n", opt);
-    help();
+    help(progname);
 }
 
-void search(char *opt, context_t *c) {
+void actions(char *opt, context_t *c, char * progname) {
     if (!strcmp(opt, ".dis")) {
         hexdump(c);
         return;
@@ -114,7 +114,7 @@ void search(char *opt, context_t *c) {
     }
 
     fprintf(stderr, "Unknown search strategy %s\n", opt);
-    help();
+    help(progname);
 }
 
 int main(int argc, char **argv) {
@@ -132,10 +132,10 @@ int main(int argc, char **argv) {
         char *opt = argv[i];
         if (opt[0] != '-')
             break;
-        parseoption(opt);
+        parseoption(opt, argv[0]);
     }
     if (!argv[i])
-        help();
+        help(argv[0]);
 
     readfile(argv[i++], &c);
     measure(&c);
@@ -143,6 +143,6 @@ int main(int argc, char **argv) {
 
     for (; i < argc; i++) {
         char *opt = argv[i];
-        search(opt, &c);
+        actions(opt, &c, argv[0]);
     }
 }
