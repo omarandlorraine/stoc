@@ -3,7 +3,6 @@
 #include <inttypes.h>
 
 #define REWRITE_LEN 50
-#define DATA_LEN    20
 
 #define ABSOLUTE 0
 #define ABSOLUTE_X 1
