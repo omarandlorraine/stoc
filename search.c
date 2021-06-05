@@ -147,31 +147,24 @@ static bool checkem(rewrite_t *r) {
 }
 
 static void random_mutation(context_t *proposal) {
-    int r = rand() %
-            6; // Keep on incrementing this until all mutations get tested okay.
+    int r = rand() % 6;
     switch (r) {
     case 0:
-        // printf("remove_instr(proposal)\n");
         remove_instr(proposal);
         break;
     case 1:
-        // printf("modify_opcode(proposal)\n");
         modify_opcode(proposal);
         break;
     case 2:
-        // printf("modify_operand(proposal)\n");
         modify_operand(proposal);
         break;
     case 3:
-        // printf("swap_instrs(proposal)\n");
         swap_instrs(proposal);
         break;
     case 4:
-        // printf("replace_instr(proposal)\n");
         replace_instr(proposal);
         break;
     case 5:
-        // printf("insert_instr(proposal)\n");
         insert_instr(proposal);
         break;
     }
@@ -180,8 +173,6 @@ static void random_mutation(context_t *proposal) {
 static bool iterate(context_t *reference, context_t *rewrite,
                     context_t *proposal) {
     random_mutation(proposal);
-    // hexdump(proposal);
-    // printf("============================================\n");
 
     if (!checkem(&proposal->program))
         return false;
@@ -209,10 +200,6 @@ void stoc_opt(context_t *reference) {
             if (iterate(reference, &rewrite, &proposal)) {
                 rewrite = proposal;
                 i = 0;
-            } else {
-                //				hexdump(&rewrite);
-                //				hexdump(&proposal);
-                //				printf("============================================\n");
             }
         }
     }
@@ -235,10 +222,6 @@ void stoc_gen(context_t *reference) {
             if (iterate(reference, &rewrite, &proposal)) {
                 hexdump(&proposal);
                 rewrite = proposal;
-            } else {
-                hexdump(&rewrite);
-                hexdump(&proposal);
-                printf("============================================\n");
             }
         }
     }
