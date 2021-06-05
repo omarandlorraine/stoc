@@ -139,6 +139,7 @@ int main(int argc, char **argv) {
 
     readfile(argv[i++], &c);
     measure(&c);
+	search_init();
 
     for (; i < argc; i++) {
         char *opt = argv[i];
