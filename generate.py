@@ -29,7 +29,6 @@ for line in sys.stdin:
     opc = Opcode(codepoint, mnemonic, mode)
     opcodes.append(opc)
 
-print("#define M6502")
 print("#include \"stoc.h\"")
 print("#include <string.h>")
 print("#include <stdio.h>")
@@ -67,15 +66,6 @@ for o in opcodes:
 print("\tdefault:\n\t\treturn 0;\n\t}")
 print("}")
 
-print("int opcode_branch_p(uint8_t op) {")
-print("\tswitch(op) {")
-
-for o in [o for o in opcodes if o.mode == "relative"]:
-    print("\tcase 0x%s:\t// %s %s" % (o.codepoint, o.mnemonic, o.mode))
-print("\t\treturn true;");
-print("\tdefault:\n\t\treturn false;\n\t}")
-print("}")
-
 for addr in lengths:
 	print("int is_%s_instruction(uint8_t op) {" % addr)
 	print("\tswitch(op) {")
@@ -83,12 +73,6 @@ for addr in lengths:
 		print("\tcase 0x%s:" % o.codepoint)
 	print("\t\treturn 1;\n\tdefault:\t\treturn 0;")
 	print("\t}\n}")
-	print("bool %s_instruction(char * op, uint8_t * out) {" % addr)
-	for o in [o for o in opcodes if o.mode == addr]:
-		print("\tif(!strncmp(op, \"%s\", %u)) { *out = 0x%s; return true; }" % (o.mnemonic, len(o.mnemonic), o.codepoint))
-	print("\treturn 0;")
-	print("}")
-
 
 print("char *opnames[256] = {")
 for i in range(256):
