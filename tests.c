@@ -1,7 +1,6 @@
 #include "tests.h"
 #include "decl.h"
 #include "emulator.h"
-#include "main.h"
 #include "stoc.h"
 #include <inttypes.h>
 #include <stdio.h>
