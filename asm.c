@@ -1,3 +1,4 @@
+#include "asm.h"
 #include "decl.h"
 #include "pick.h"
 #include "stoc.h"
