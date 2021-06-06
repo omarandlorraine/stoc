@@ -5,8 +5,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+/// Maximum length for each line.
 #define ASMBUFLEN 255
+
+/// Whitespace, used for delimiting tokens, passed to strtok
 #define DELIM "\n\t "
+
+/**
+@file
+@brief Parser for .stoc files
+*/
 
 static int line_no = 0;
 
@@ -147,6 +155,12 @@ decl_t *parseline(char *line, context_t *c) {
     fprintf(stderr, "unknown decltype \"%s\"\n", f);
     exit(1);
 }
+
+/** Load a .stoc file
+*
+* @param filename The name of the file to load
+* @param reference A pointer to the context_t to load the file into
+*/
 
 void readfile(char *filename, context_t *reference) {
     FILE *filePointer;

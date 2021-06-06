@@ -66,14 +66,33 @@ typedef struct i1 {
 	uint16_t operand;
 } instruction_t;
 
+/**
+ * rewrite_t
+ *
+ * A rewrite is a list of instructions, plus associated data.
+ */
 typedef struct r1 {
-	uint16_t org;
-	uint16_t length; // number of instructions
-	uint16_t end; 	// first address after last instruction
-	instruction_t instructions[REWRITE_LEN];
-	long double fitness;
-	long double mcycles; // machine cycles
-	int blength; // length in bytes
+
+    //! Where the rewrite starts
+    uint16_t org;
+
+    //! Number of instructions in the rewrite
+    uint16_t length;
+
+    //! The first address after the last instruction
+    uint16_t end;
+
+    //! Array of instructions
+    instruction_t instructions[REWRITE_LEN];
+
+    //! Fitness, or "how correct is the rewrite"
+    long double fitness;
+
+    //! machine cycles, or "how long does the program take"
+    long double mcycles; // machine cycles
+
+    //! The program's length, in bytes
+    int blength;
 } rewrite_t;
 
 typedef struct c1 {

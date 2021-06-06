@@ -53,6 +53,10 @@ format:
 fake6502:
 	make -C fake6502 default
 
+.PHONY: doxygen
+doxygen:
+	doxygen dconfig
+
 # The executables
 stoc-6502: $(BUILD_DIR)gen-6502.o $(OBJECTS)
 	make fake6502

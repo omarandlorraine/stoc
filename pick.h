@@ -3,14 +3,27 @@
 #include <stdbool.h>
 #define MAXPICKSIZE 50
 
+/** A set of values.
+ *
+ * This is intended to be a set, which we can pick a number at random from, or
+ * which we can iterate over
+ */
 typedef struct {
-	int count;
-	uint16_t vals[MAXPICKSIZE];
+    /// Number of members in the set
+    int count;
+    /// the members
+    uint16_t vals[MAXPICKSIZE];
 } pick_t;
 
+/** An iterator
+ *
+ * This one is for iterating over a pick_t.
+ */
 typedef struct {
-	pick_t * pick;
-	int current;
+    /// Pointer to the pick_t object over which we're iterating
+    pick_t *pick;
+    /// Current offset
+    int current;
 } iterator_t;
 
 extern pick_t constants;
