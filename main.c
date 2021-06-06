@@ -72,7 +72,7 @@ void hexdump(context_t *c) {
     fprintf(stderr, "\n");
 }
 
-void help(char * progname) {
+void help(char *progname) {
     printf("Usage:\n\t%s [options...] decl_file [actions...]\n", progname);
     printf("\nPossible options:\n\t-O    optimize for speed, this is the "
            "default one\n");
@@ -84,7 +84,7 @@ void help(char * progname) {
     exit(1);
 }
 
-void parseoption(char *opt, char * progname) {
+void parseoption(char *opt, char *progname) {
     if (!strcmp(opt, "-Os")) {
         set_optimization(optimize_size);
         return;
@@ -97,7 +97,7 @@ void parseoption(char *opt, char * progname) {
     help(progname);
 }
 
-void actions(char *opt, context_t *c, char * progname) {
+void actions(char *opt, context_t *c, char *progname) {
     if (!strcmp(opt, ".dis")) {
         hexdump(c);
         return;
@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
 
     readfile(argv[i++], &c);
     measure(&c);
-	search_init();
+    search_init();
 
     for (; i < argc; i++) {
         char *opt = argv[i];

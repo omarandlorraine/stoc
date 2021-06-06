@@ -1,1 +1,1 @@
-void step(context_t * c);
+void step(context_t *c);

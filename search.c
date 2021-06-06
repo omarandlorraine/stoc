@@ -24,51 +24,51 @@ retry:
 }
 
 static bool randomise_operand(rewrite_t *p, instruction_t *i) {
-	// TODO: Can we think of a more sensible solution here?
-	pick_t *mode = addressing_modes[i->opcode];
-	if (!mode)
-		return false;
+    // TODO: Can we think of a more sensible solution here?
+    pick_t *mode = addressing_modes[i->opcode];
+    if (!mode)
+        return false;
 
-	if(mode == &mode_implied)
-		return true;
+    if (mode == &mode_implied)
+        return true;
 
-	if(mode == &mode_immediate)
-		return random_constant(&i->operand);
+    if (mode == &mode_immediate)
+        return random_constant(&i->operand);
 
-	if(mode == &mode_indirect_x)
-		return pick_at_random(&zp_addresses, &i->operand);
+    if (mode == &mode_indirect_x)
+        return pick_at_random(&zp_addresses, &i->operand);
 
-	if(mode == &mode_indirect_y)
-		return pick_at_random(&zp_addresses, &i->operand);
+    if (mode == &mode_indirect_y)
+        return pick_at_random(&zp_addresses, &i->operand);
 
-	if(mode == &mode_zero_page)
-		return pick_at_random(&zp_addresses, &i->operand);
+    if (mode == &mode_zero_page)
+        return pick_at_random(&zp_addresses, &i->operand);
 
-	if(mode == &mode_zero_page_x)
-		return pick_at_random(&zp_addresses, &i->operand);
+    if (mode == &mode_zero_page_x)
+        return pick_at_random(&zp_addresses, &i->operand);
 
-	if(mode == &mode_zero_page_y)
-		return pick_at_random(&zp_addresses, &i->operand);
+    if (mode == &mode_zero_page_y)
+        return pick_at_random(&zp_addresses, &i->operand);
 
-	if(mode == &mode_indirect)
-		return random_address(&i->operand);
+    if (mode == &mode_indirect)
+        return random_address(&i->operand);
 
-	if(mode == &mode_absolute)
-		return random_address(&i->operand);
+    if (mode == &mode_absolute)
+        return random_address(&i->operand);
 
-	if(mode == &mode_absolute_x)
-		return random_address(&i->operand);
+    if (mode == &mode_absolute_x)
+        return random_address(&i->operand);
 
-	if(mode == &mode_absolute_y)
-		return random_address(&i->operand);
+    if (mode == &mode_absolute_y)
+        return random_address(&i->operand);
 
-	if(mode == &mode_relative) {
-		printf("relative instruction error\n");
-		exit(1);
-	}
+    if (mode == &mode_relative) {
+        printf("relative instruction error\n");
+        exit(1);
+    }
 
-	printf("unknown mode for %02x error\n", i->opcode);
-	exit(1);
+    printf("unknown mode for %02x error\n", i->opcode);
+    exit(1);
 }
 
 static void randomise_instruction(rewrite_t *p, instruction_t *i) {
@@ -119,9 +119,9 @@ static void modify_opcode(context_t *proposal) {
     int offs = rand() % (proposal->program.length);
     instruction_t i = proposal->program.instructions[offs];
     uint16_t opcode = i.opcode;
-    pick_t * m = addressing_modes[opcode];
-	pick_at_random(m, &opcode);
-	i.opcode = opcode;
+    pick_t *m = addressing_modes[opcode];
+    pick_at_random(m, &opcode);
+    i.opcode = opcode;
 }
 
 static void replace_instr(context_t *proposal) {

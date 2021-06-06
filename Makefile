@@ -47,7 +47,7 @@ cppcheck: $(GENERATED)
 
 .PHONY: format
 format:
-	clang-format -style="{BasedOnStyle: llvm, IndentWidth: 4}" -i *.c
+	clang-format -style="{BasedOnStyle: llvm, IndentWidth: 4}" -i *.c *.h
 
 .PHONY: fake6502
 fake6502:
