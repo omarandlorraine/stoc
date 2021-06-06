@@ -24,7 +24,7 @@ $(OBJECTS): $(BUILD_DIR)%.o:%.c
 .PHONY: clean
 clean:
 	rm -rf gen-*.c *.o $(ALL_MACHINES)
-	rm -rf build
+	rm -rf build latex
 	make -C fake6502/ clean
 
 # Source file per target, generated at compile-time
@@ -56,6 +56,8 @@ fake6502:
 .PHONY: doxygen
 doxygen:
 	doxygen dconfig
+	make -C latex all
+	mv latex/refman.pdf ./
 
 # The executables
 stoc-6502: $(BUILD_DIR)gen-6502.o $(OBJECTS)
