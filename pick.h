@@ -3,6 +3,11 @@
 #include <stdint.h>
 #define MAXPICKSIZE 50
 
+/**
+ * @file
+ * @brief Handling sets of values
+ */
+
 /** A set of values.
  *
  * This is intended to be a set, which we can pick a number at random from, or
