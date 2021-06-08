@@ -1,3 +1,4 @@
+#include "stoc.h"
 /**
  * @file
  * @brief Interface to the emulator
