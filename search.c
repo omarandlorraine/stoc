@@ -219,26 +219,50 @@ void stoc_opt(context_t *reference) {
     hexdump(&rewrite);
 }
 
-void stoc_gen(context_t *reference) {
-    // We're going to try millions of random mutations until we find a program
-    // that's equivalent.
-    context_t rewrite = *reference;
-    context_t proposal;
-    init_program(&rewrite.program);
-    insert_instr(&rewrite);
-    hexdump(&rewrite);
-
-    for (int i = 0; i < 10000000; i++) {
-        proposal = rewrite;
-
-        for (int j = 0; j < 10; j++) {
-            if (iterate(reference, &rewrite, &proposal)) {
-                hexdump(&proposal);
-                rewrite = proposal;
-            }
+bool exhsearch(context_t *reference, context_t *rewrite, int i) {
+    // End of this branch
+    if (i < 0) {
+        if (equivalence(reference, rewrite)) {
+            hexdump(rewrite);
+            return true;
         }
+        return false;
     }
-    hexdump(&rewrite);
+
+    iterator_t opciter;
+    iterator_t operiter;
+
+    uint16_t opcode;
+
+    for (iterator_init(&mode_implied, &opciter);
+         pick_iterate(&opciter, &opcode);) {
+        rewrite->program.instructions[i].opcode = opcode;
+        if (exhsearch(reference, rewrite, i - 1))
+            return true;
+    }
+
+    for (iterator_init(&mode_immediate, &opciter);
+         pick_iterate(&opciter, &opcode);) {
+        rewrite->program.instructions[i].opcode = opcode;
+        for (iterator_init(&constants, &operiter); pick_iterate(
+                 &operiter, &rewrite->program.instructions[i].operand);)
+            if (exhsearch(reference, rewrite, i - 1))
+                return true;
+    }
+
+    // TODO: Add other kinds of instructions here.
+    return false;
+}
+
+void stoc_exh(context_t *reference) {
+    // Exhaustive search for equivalent program
+    context_t rewrite = *reference;
+
+    for (int i = 0; i < 10; i++) {
+        rewrite.program.length = i;
+        if (exhsearch(reference, &rewrite, i - 1))
+            break;
+    }
 }
 
 void deadcodeelim(context_t *reference) {

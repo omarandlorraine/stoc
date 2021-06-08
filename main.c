@@ -72,7 +72,7 @@ void help(char *progname) {
            "default one\n");
     printf("\t-Os   optimize for size\n");
     printf("\nPossible actions:\n\t.dce  eliminate dead code\n");
-    printf("\t.gen  stochastically generate another program\n");
+    printf("\t.exh  exhaustive search for an equivalent program\n");
     printf("\t.opt  stochastically optimize the existing program\n");
     printf("\t.dis  disassemble the program in the decl_file\n");
     exit(1);
@@ -104,6 +104,11 @@ void actions(char *opt, context_t *c, char *progname) {
 
     if (!strcmp(opt, ".opt")) {
         stoc_opt(c);
+        return;
+    }
+
+    if (!strcmp(opt, ".exh")) {
+        stoc_exh(c);
         return;
     }
 
