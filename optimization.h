@@ -14,5 +14,6 @@ int optimize_speed(context_t *c);
 /// Sets the optimization function
 void set_optimization(int (*fn)(context_t *c));
 
-/// Returns an integer representing a comparison of two rewrites, according to whichever function was selected by set_optimization
+/// Returns an integer representing a comparison of two rewrites, according to
+/// whichever function was selected by set_optimization
 int compare(context_t *a, context_t *b);

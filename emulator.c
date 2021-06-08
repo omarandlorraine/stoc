@@ -1,5 +1,5 @@
-#include "stoc.h"
 #include "emulator.h"
+#include "stoc.h"
 
 uint8_t mem_read(context_t *c, uint16_t address) { return c->mem[address]; }
 
