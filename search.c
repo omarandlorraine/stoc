@@ -207,7 +207,7 @@ void stoc_opt(context_t *reference) {
     context_t rewrite = *reference;
     context_t proposal;
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 1000; i++) {
         proposal = rewrite;
         for (int j = 0; j < 100; j++) {
             if (iterate(reference, &rewrite, &proposal)) {
