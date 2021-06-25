@@ -10,7 +10,7 @@
  * @param address The address to write to
  * @param val The value to write
  */
-void mem_write(context_t *c, addr_t address, data_t val);
+void mem_write(stoc_t *c, addr_t address, data_t val);
 
 /** Read a value in the emulator's address space
  *
@@ -18,7 +18,7 @@ void mem_write(context_t *c, addr_t address, data_t val);
  * @param address The address to read from
  * @return the value read from the memory location
  */
-uint8_t mem_read(context_t *c, addr_t address);
+uint8_t mem_read(stoc_t *c, addr_t address);
 
 /** Single-step the emulator
  *
@@ -26,4 +26,4 @@ uint8_t mem_read(context_t *c, addr_t address);
  *
  * @param c Which emulated machine
  */
-void step(context_t *c);
+void step(stoc_t *c);

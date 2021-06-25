@@ -9,6 +9,6 @@
 /** Load a .stoc file
  *
  * @param filename The name of the file to load
- * @param reference A pointer to the context_t to load the file into
+ * @param reference A pointer to the stoc_t to load the file into
  */
-void readfile(char *filename, context_t *reference);
+void readfile(char *filename, stoc_t *reference);

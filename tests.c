@@ -22,7 +22,7 @@ static int num_test_cases = 0;
 
 uint8_t *testcases[TESTCASE_NO];
 
-void install(context_t *c) {
+void install(stoc_t *c) {
     rewrite_t *r = &c->program;
     uint16_t addr = r->org;
     for (int i = 0; i < r->length; i++) {
@@ -38,7 +38,7 @@ void install(context_t *c) {
     r->end = r->org + r->blength;
 }
 
-int run(context_t *c) {
+int run(stoc_t *c) {
     addr_t org = c->program.org;
     c->pc = org;
     for (int i = 0; i < COMPUTEBUDGET; i++) {
@@ -62,7 +62,7 @@ void print_test_case(uint8_t *test, size_t length) {
     printf("\n");
 }
 
-int run_test_case(uint8_t *test, context_t *rewrite) {
+int run_test_case(uint8_t *test, stoc_t *rewrite) {
     decl_t *d = rewrite->decl;
     while (d) {
         if (d->fn(rewrite, d, &test))
@@ -72,7 +72,7 @@ int run_test_case(uint8_t *test, context_t *rewrite) {
     return 0;
 }
 
-int create_test_case(context_t *reference, context_t *rewrite) {
+int create_test_case(stoc_t *reference, stoc_t *rewrite) {
     uint8_t *tc = malloc(TESTCASE_SZ);
 
     uint8_t *test = tc;
@@ -88,7 +88,7 @@ int create_test_case(context_t *reference, context_t *rewrite) {
     return run_test_case(tc, rewrite);
 }
 
-int equivalence(context_t *reference, context_t *rewrite) {
+int equivalence(stoc_t *reference, stoc_t *rewrite) {
     install(reference);
     install(rewrite);
 
@@ -103,7 +103,7 @@ int equivalence(context_t *reference, context_t *rewrite) {
     return !create_test_case(reference, rewrite);
 }
 
-void measure(context_t *c) {
+void measure(stoc_t *c) {
     install(c);
     if (!num_test_cases) {
         uint8_t *tc = malloc(TESTCASE_SZ);

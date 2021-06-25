@@ -77,7 +77,7 @@ static void randomise_instruction(rewrite_t *p, instruction_t *i) {
     } while (!randomise_operand(p, i));
 }
 
-static void remove_instr(context_t *proposal) {
+static void remove_instr(stoc_t *proposal) {
     if (proposal->program.length < 2)
         return;
     int offs = rand() % proposal->program.length;
@@ -88,7 +88,7 @@ static void remove_instr(context_t *proposal) {
     proposal->program.length--;
 }
 
-static void insert_instr(context_t *proposal) {
+static void insert_instr(stoc_t *proposal) {
     int rnd = rand();
     int offs = rnd % (proposal->program.length);
     proposal->program.length++;
@@ -100,7 +100,7 @@ static void insert_instr(context_t *proposal) {
                           &proposal->program.instructions[offs]);
 }
 
-static void modify_operand(context_t *proposal) {
+static void modify_operand(stoc_t *proposal) {
     if (proposal->program.length == 0)
         return;
     int rnd = rand();
@@ -113,7 +113,7 @@ static void modify_operand(context_t *proposal) {
                     __LINE__));
 }
 
-static void modify_opcode(context_t *proposal) {
+static void modify_opcode(stoc_t *proposal) {
     if (proposal->program.length == 0)
         return;
     int offs = rand() % (proposal->program.length);
@@ -124,7 +124,7 @@ static void modify_opcode(context_t *proposal) {
     i.opcode = opcode;
 }
 
-static void replace_instr(context_t *proposal) {
+static void replace_instr(stoc_t *proposal) {
     if (proposal->program.length == 0)
         return;
 
@@ -135,7 +135,7 @@ static void replace_instr(context_t *proposal) {
                                 &proposal->program.instructions[offs]));
 }
 
-static void swap_instrs(context_t *proposal) {
+static void swap_instrs(stoc_t *proposal) {
     if (proposal->program.length < 2)
         return;
     int offs1 = rand() % (proposal->program.length);
@@ -159,7 +159,7 @@ static bool checkem(rewrite_t *r) {
     return true;
 }
 
-static void random_mutation(context_t *proposal) {
+static void random_mutation(stoc_t *proposal) {
     int r = rand() % 6;
     switch (r) {
     case 0:
@@ -183,8 +183,8 @@ static void random_mutation(context_t *proposal) {
     }
 }
 
-static bool iterate(context_t *reference, context_t *rewrite,
-                    context_t *proposal) {
+static bool iterate(stoc_t *reference, stoc_t *rewrite,
+                    stoc_t *proposal) {
     random_mutation(proposal);
 
     if (!checkem(&proposal->program))
@@ -200,12 +200,12 @@ static bool iterate(context_t *reference, context_t *rewrite,
     return false;
 }
 
-void stoc_opt(context_t *reference) {
+void stoc_opt(stoc_t *reference) {
     // We're going to try millions of random mutations until we find a program
     // that's both equivalent and more optimal
     measure(reference);
-    context_t rewrite = *reference;
-    context_t proposal;
+    stoc_t rewrite = *reference;
+    stoc_t proposal;
 
     for (int i = 0; i < 1000; i++) {
         proposal = rewrite;
@@ -219,7 +219,7 @@ void stoc_opt(context_t *reference) {
     hexdump(&rewrite);
 }
 
-bool exhsearch(context_t *reference, context_t *rewrite, int i) {
+bool exhsearch(stoc_t *reference, stoc_t *rewrite, int i) {
     // End of this branch
     if (i < 0) {
         if (equivalence(reference, rewrite)) {
@@ -254,9 +254,9 @@ bool exhsearch(context_t *reference, context_t *rewrite, int i) {
     return false;
 }
 
-void stoc_exh(context_t *reference) {
+void stoc_exh(stoc_t *reference) {
     // Exhaustive search for equivalent program
-    context_t rewrite = *reference;
+    stoc_t rewrite = *reference;
 
     for (int i = 0; i < 10; i++) {
         rewrite.program.length = i;
@@ -265,11 +265,11 @@ void stoc_exh(context_t *reference) {
     }
 }
 
-void deadcodeelim(context_t *reference) {
+void deadcodeelim(stoc_t *reference) {
     // One common and simple but effective optimisation strategy is dead code
     // elimination. It removes instructions which are found to be ineffectual.
-    context_t rewrite;
-    context_t proposal;
+    stoc_t rewrite;
+    stoc_t proposal;
 
     rewrite = *reference;
 

@@ -10,4 +10,4 @@
  *
  * Outputs the rewrite, plus miscellaneous measurements, to stdout.
  */
-void hexdump(context_t *r);
+void hexdump(stoc_t *r);

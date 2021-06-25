@@ -12,7 +12,7 @@
 #include <time.h>
 #include <unistd.h>
 
-void hexdump(context_t *c) {
+void hexdump(stoc_t *c) {
     rewrite_t *r = &c->program;
     printf("; starting at $%04x\n", r->org);
     printf("; %d instructions\n", r->length);
@@ -91,7 +91,7 @@ void parseoption(char *opt, char *progname) {
     help(progname);
 }
 
-void actions(char *opt, context_t *c, char *progname) {
+void actions(char *opt, stoc_t *c, char *progname) {
     if (!strcmp(opt, ".dis")) {
         hexdump(c);
         return;
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
     pickinit();
     pick_set_common_constants();
 
-    context_t c;
+    stoc_t c;
     c.clockticks = 0;
     set_optimization(optimize_speed);
 

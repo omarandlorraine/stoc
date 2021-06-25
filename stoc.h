@@ -109,8 +109,8 @@ typedef struct c1 {
     uint8_t opcode;
     int exitcode;
     struct _decl_t *decl;
-} context_t;
+} stoc_t;
 
 void init_program(rewrite_t *r);
-extern void (*optable[256])(context_t *c);
+extern void (*optable[256])(stoc_t *c);
 char *opnames[256];

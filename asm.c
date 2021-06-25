@@ -21,7 +21,7 @@ void endofline() {
     }
 }
 
-decl_t *parse_register_in(int (*fn)(context_t *c, decl_t *d, uint8_t **scram)) {
+decl_t *parse_register_in(int (*fn)(stoc_t *c, decl_t *d, uint8_t **scram)) {
     endofline();
     decl_t *d = malloc(sizeof(decl_t));
     d->fn = fn;
@@ -32,8 +32,8 @@ decl_t *parse_register_in(int (*fn)(context_t *c, decl_t *d, uint8_t **scram)) {
     return d;
 }
 
-decl_t *parse_register_out(int (*fn)(context_t *c, decl_t *d, uint8_t **scram),
-                           int (*setup)(context_t *c, decl_t *d,
+decl_t *parse_register_out(int (*fn)(stoc_t *c, decl_t *d, uint8_t **scram),
+                           int (*setup)(stoc_t *c, decl_t *d,
                                         uint8_t **scram)) {
     endofline();
     decl_t *d = malloc(sizeof(decl_t));
@@ -122,7 +122,7 @@ decl_t *parse_run(rewrite_t *r) {
     return d;
 }
 
-decl_t *parseline(char *line, context_t *c) {
+decl_t *parseline(char *line, stoc_t *c) {
     char *f = strtok(line, DELIM);
 
     if (!f)
@@ -152,7 +152,7 @@ decl_t *parseline(char *line, context_t *c) {
     exit(1);
 }
 
-void readfile(char *filename, context_t *reference) {
+void readfile(char *filename, stoc_t *reference) {
     FILE *filePointer;
     char line[ASMBUFLEN];
 
