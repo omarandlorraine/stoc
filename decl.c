@@ -1,5 +1,5 @@
 #include "decl.h"
-#include "emulator.h"
+#include "arch.h"
 #include "main.h"
 #include "stdio.h"
 #include "tests.h"

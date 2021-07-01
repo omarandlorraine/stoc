@@ -3,7 +3,7 @@ CFLAGS=-g -Wall -Werror -pedantic
 LDOPTS = -lreadline
 ALL_MACHINES = stoc-6502 stoc-2a03 stoc-6510 stoc-65c02
 BUILD_DIR := build/
-SOURCES = tests.c main.c stoc.c search.c asm.c decl.c optimization.c pick.c emulator.c
+SOURCES = tests.c main.c stoc.c search.c asm.c decl.c optimization.c pick.c
 GENERATED = gen-6502.c gen-6510.c gen-65c02.c gen-2a03.c
 GENOBJECTS = $(GENERATED:%.c=$(BUILD_DIR)%.o)
 OBJECTS = $(SOURCES:%.c=$(BUILD_DIR)%.o)
