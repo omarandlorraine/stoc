@@ -183,8 +183,7 @@ static void random_mutation(stoc_t *proposal) {
     }
 }
 
-static bool iterate(stoc_t *reference, stoc_t *rewrite,
-                    stoc_t *proposal) {
+static bool iterate(stoc_t *reference, stoc_t *rewrite, stoc_t *proposal) {
     random_mutation(proposal);
 
     if (!checkem(&proposal->program))

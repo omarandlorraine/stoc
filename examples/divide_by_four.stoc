@@ -1,3 +1,3 @@
-register-a-in
+register-in a
 run $2000 $6a $6a $2a $6a $6a $2a $29 $3f
-register-a-out
+register-out a

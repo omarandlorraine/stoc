@@ -3,7 +3,7 @@ CFLAGS=-g -Wall -Werror -pedantic
 LDOPTS = -lreadline
 ALL_MACHINES = stoc-6502 stoc-2a03 stoc-6510 stoc-65c02
 BUILD_DIR := build/
-SOURCES = tests.c main.c stoc.c search.c asm.c decl.c optimization.c pick.c emulator.c
+SOURCES = tests.c main.c stoc.c search.c asm.c decl.c optimization.c pick.c
 GENERATED = gen-6502.c gen-6510.c gen-65c02.c gen-2a03.c
 GENOBJECTS = $(GENERATED:%.c=$(BUILD_DIR)%.o)
 OBJECTS = $(SOURCES:%.c=$(BUILD_DIR)%.o)
@@ -60,18 +60,18 @@ doxygen:
 	mv latex/refman.pdf ./
 
 # The executables
-stoc-6502: $(BUILD_DIR)gen-6502.o $(OBJECTS)
+stoc-6502: $(BUILD_DIR)gen-6502.o $(OBJECTS) arch-6502.o
 	make fake6502
 	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/build/fake6502.o
 
-stoc-6510: $(BUILD_DIR)gen-6510.o $(OBJECTS)
+stoc-6510: $(BUILD_DIR)gen-6510.o $(OBJECTS) arch-6502.o
 	make fake6502
 	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/build/fake6502.o
 
-stoc-2a03: $(BUILD_DIR)gen-2a03.o $(OBJECTS)
+stoc-2a03: $(BUILD_DIR)gen-2a03.o $(OBJECTS) arch-6502.o
 	make fake6502
 	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/build/fake2a03.o
 
-stoc-65c02: $(BUILD_DIR)gen-65c02.o $(OBJECTS)
+stoc-65c02: $(BUILD_DIR)gen-65c02.o $(OBJECTS) arch-6502.o
 	make fake6502
 	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/build/fake65c02.o

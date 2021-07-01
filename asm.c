@@ -1,4 +1,5 @@
 #include "asm.h"
+#include "arch.h"
 #include "decl.h"
 #include "pick.h"
 #include "stoc.h"
@@ -133,20 +134,20 @@ decl_t *parseline(char *line, stoc_t *c) {
         return parse_stack_in();
     if (!strcmp(f, "stack-out"))
         return parse_stack_out();
-    if (!strcmp(f, "register-a-in"))
-        return parse_register_in(live_in_a);
-    if (!strcmp(f, "register-x-in"))
-        return parse_register_in(live_in_x);
-    if (!strcmp(f, "register-y-in"))
-        return parse_register_in(live_in_y);
     if (!strcmp(f, "run"))
         return parse_run(&c->program);
-    if (!strcmp(f, "register-a-out"))
-        return parse_register_out(live_out_a, setup_live_out_a);
-    if (!strcmp(f, "register-x-out"))
-        return parse_register_out(live_out_x, setup_live_out_x);
-    if (!strcmp(f, "register-y-out"))
-        return parse_register_out(live_out_y, setup_live_out_y);
+    if (!strcmp(f, "register-in")) {
+        char *regname = strtok(NULL, DELIM);
+        decl_t *d = parse_register_in(live_in_a);
+        register_in_name(d, regname);
+        return d;
+    }
+    if (!strcmp(f, "register-out")) {
+        char *regname = strtok(NULL, DELIM);
+        decl_t *d = parse_register_out(live_out_a, setup_live_out_a);
+        register_out_name(d, regname);
+        return d;
+    }
 
     fprintf(stderr, "unknown decltype \"%s\"\n", f);
     exit(1);

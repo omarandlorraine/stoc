@@ -12,6 +12,9 @@ struct _decl_t {
     struct _decl_t *next;
 };
 
+void output_scram(uint8_t **scram, uint8_t out);
+uint8_t consume_scram(uint8_t **scram);
+
 int setup_start_decl(stoc_t *c, decl_t *d, uint8_t **scram);
 int start_decl(stoc_t *c, decl_t *d, uint8_t **scram);
 int run_decl(stoc_t *c, decl_t *d, uint8_t **scram);
