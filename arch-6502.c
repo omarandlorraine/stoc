@@ -93,3 +93,58 @@ void register_out_name(decl_t *d, char *name) {
     fprintf(stderr, "Unknown register name \"%s\" in " __FILE__ "\n", name);
     exit(1);
 }
+
+void hexdump(stoc_t *c) {
+    rewrite_t *r = &c->program;
+    printf("; starting at $%04x\n", r->org);
+    printf("; %d instructions\n", r->length);
+    printf("; %d bytes\n; %lld clockticks\n", r->blength, c->clockticks);
+    for (int i = 0; i < r->length; i++) {
+        uint8_t instr = r->instructions[i].opcode;
+        if (is_implied_instruction(instr)) {
+            fprintf(stderr, "\t%s\n", opnames[instr]);
+        } else if (is_immediate_instruction(instr)) {
+            fprintf(stderr, "\t%s #$%02x\n", opnames[instr],
+                    r->instructions[i].operand & 0x00ff);
+        } else if (is_zero_page_instruction(instr)) {
+            fprintf(stderr, "\t%s $%02x\n", opnames[instr],
+                    r->instructions[i].operand & 0x00ff);
+        } else if (is_zero_page_x_instruction(instr)) {
+            fprintf(stderr, "\t%s $%02x,x\n", opnames[instr],
+                    r->instructions[i].operand & 0x00ff);
+        } else if (is_zero_page_y_instruction(instr)) {
+            fprintf(stderr, "\t%s $%02x,y\n", opnames[instr],
+                    r->instructions[i].operand & 0x00ff);
+        } else if (is_absolute_instruction(instr)) {
+            fprintf(stderr, "\t%s $%04x\n", opnames[instr],
+                    r->instructions[i].operand);
+        } else if (is_absolute_y_instruction(instr)) {
+            fprintf(stderr, "\t%s $%04x,y\n", opnames[instr],
+                    r->instructions[i].operand);
+        } else if (is_absolute_x_instruction(instr)) {
+            fprintf(stderr, "\t%s $%04x,x\n", opnames[instr],
+                    r->instructions[i].operand);
+        } else if (is_indirect_instruction(instr)) {
+            fprintf(stderr, "\t%s $(%04x)\n", opnames[instr],
+                    r->instructions[i].operand & 0x00ff);
+        } else if (is_indirect_x_instruction(instr)) {
+            fprintf(stderr, "\t%s $(%02x),x\n", opnames[instr],
+                    r->instructions[i].operand & 0x00ff);
+        } else if (is_relative_instruction(instr)) {
+            fprintf(stderr, "\t%s * + %d\n", opnames[instr],
+                    r->instructions[i].operand & 0x00ff);
+        } else if (is_indirect_y_instruction(instr)) {
+            fprintf(stderr, "\t%s $(%02x,y)\n", opnames[instr],
+                    r->instructions[i].operand & 0x00ff);
+        } else {
+            fprintf(stderr, "\t$%02x", instr);
+            if (opcode_length(instr) > 1)
+                fprintf(stderr, " $%02x", r->instructions[i].operand & 0x00ff);
+            if (opcode_length(instr) > 2)
+                fprintf(stderr, " $%02x", r->instructions[i].operand >> 8);
+            fprintf(stderr, "\n");
+        }
+    }
+    fprintf(stderr, "\n");
+}
+

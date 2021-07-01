@@ -30,5 +30,8 @@ uint8_t mem_read(stoc_t *c, addr_t address);
  */
 void step(stoc_t *c);
 
+
+// TODO: doxygen for these functions
 void register_in_name(decl_t *d, char *name);
 void register_out_name(decl_t *d, char *name);
+void hexdump(stoc_t *c);
