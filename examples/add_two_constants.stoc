@@ -1,4 +1,4 @@
-register-a-in
-register-x-in
+register-in a
+register-in x
 run $2000 $18 $a9 $07 $f8 $18 $69 $05
-register-a-out
+register-out a

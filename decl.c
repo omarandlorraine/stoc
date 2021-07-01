@@ -18,21 +18,6 @@ void output_scram(uint8_t **scram, uint8_t out) {
     ++*scram;
 }
 
-int live_in_a(stoc_t *c, decl_t *d, uint8_t **scram) {
-    c->a = consume_scram(scram);
-    return 0;
-}
-
-int live_in_x(stoc_t *c, decl_t *d, uint8_t **scram) {
-    c->x = consume_scram(scram);
-    return 0;
-}
-
-int live_in_y(stoc_t *c, decl_t *d, uint8_t **scram) {
-    c->x = consume_scram(scram);
-    return 0;
-}
-
 int setup_byte_in(stoc_t *c, decl_t *d, uint8_t **scram) {
     **scram = rand();
     return d->fn(c, d, scram);
@@ -72,36 +57,6 @@ int live_in_pointer(stoc_t *c, decl_t *d, uint8_t **scram) {
     int len = d->length;
     while (len--)
         mem_write(c, addr++, consume_scram(scram));
-    return 0;
-}
-
-int live_out_a(stoc_t *c, decl_t *d, uint8_t **scram) {
-    uint8_t s = consume_scram(scram);
-    if (c->a == s) {
-        return 0;
-    } else {
-        return 1;
-    }
-}
-
-int setup_live_out_a(stoc_t *c, decl_t *d, uint8_t **scram) {
-    output_scram(scram, c->a);
-    return 0;
-}
-
-int live_out_x(stoc_t *c, decl_t *d, uint8_t **scram) {
-    return c->x != consume_scram(scram);
-}
-int setup_live_out_x(stoc_t *c, decl_t *d, uint8_t **scram) {
-    output_scram(scram, c->x);
-    return 0;
-}
-
-int live_out_y(stoc_t *c, decl_t *d, uint8_t **scram) {
-    return c->y != consume_scram(scram);
-}
-int setup_live_out_y(stoc_t *c, decl_t *d, uint8_t **scram) {
-    output_scram(scram, c->y);
     return 0;
 }
 
