@@ -1,5 +1,4 @@
 #include "arch.h"
-#include "main.h"
 #include "asm.h"
 #include "optimization.h"
 #include "pick.h"

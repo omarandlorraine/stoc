@@ -1,5 +1,5 @@
 #include "search.h"
-#include "main.h"
+#include "arch.h"
 #include "optimization.h"
 #include "pick.h"
 #include "stoc.h"

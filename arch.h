@@ -30,6 +30,11 @@ uint8_t mem_read(stoc_t *c, addr_t address);
  */
 void step(stoc_t *c);
 
+/** Disassemble the file
+ *
+ * Outputs the rewrite, plus miscellaneous measurements, to stdout.
+ */
+void hexdump(stoc_t *r);
 
 // TODO: doxygen for these functions
 void register_in_name(decl_t *d, char *name);
