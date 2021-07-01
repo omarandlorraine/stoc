@@ -10,17 +10,15 @@
 
 static pick_t zp_addresses;
 
-static uint8_t random_opcode() {
-    uint8_t opcode;
+static void randomise_opcode(instruction_t * i) {
 retry:
-    opcode = rand();
-    if (!opcode_legal_p(opcode))
+    i->opcode = rand();
+    if (!opcode_legal_p(i->opcode))
         goto retry;
-    if (!addressing_modes[opcode])
+    if (!addressing_modes[i->opcode])
         goto retry;
-    if (addressing_modes[opcode] == &mode_relative)
+    if (addressing_modes[i->opcode] == &mode_relative)
         goto retry;
-    return opcode;
 }
 
 static bool randomise_operand(rewrite_t *p, instruction_t *i) {
@@ -73,7 +71,7 @@ static bool randomise_operand(rewrite_t *p, instruction_t *i) {
 
 static void randomise_instruction(rewrite_t *p, instruction_t *i) {
     do {
-        i->opcode = random_opcode();
+		randomise_opcode(i);
     } while (!randomise_operand(p, i));
 }
 
@@ -130,7 +128,7 @@ static void replace_instr(stoc_t *proposal) {
 
     int offs = rand() % (proposal->program.length);
     do {
-        proposal->program.instructions[offs].opcode = random_opcode();
+        randomise_opcode(&proposal->program.instructions[offs]);
     } while (!randomise_operand(&proposal->program,
                                 &proposal->program.instructions[offs]));
 }
