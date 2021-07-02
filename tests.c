@@ -32,6 +32,7 @@ void print_test_case(uint8_t *test, size_t length) {
 }
 
 int run_test_case(uint8_t *test, stoc_t *rewrite) {
+    install(rewrite);
     decl_t *d = rewrite->decl;
     while (d) {
         if (d->fn(rewrite, d, &test))
@@ -58,9 +59,6 @@ int create_test_case(stoc_t *reference, stoc_t *rewrite) {
 }
 
 int equivalence(stoc_t *reference, stoc_t *rewrite) {
-    install(reference);
-    install(rewrite);
-
     rewrite->clockticks = 0;
 
     int i;
@@ -73,7 +71,7 @@ int equivalence(stoc_t *reference, stoc_t *rewrite) {
 }
 
 void measure(stoc_t *c) {
-    install(c);
+	install(c);
     if (!num_test_cases) {
         uint8_t *tc = malloc(TESTCASE_SZ);
 
