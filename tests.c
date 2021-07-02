@@ -38,21 +38,6 @@ void install(stoc_t *c) {
     r->end = r->org + r->blength;
 }
 
-int run(stoc_t *c) {
-    addr_t org = c->program.org;
-    c->pc = org;
-    for (int i = 0; i < COMPUTEBUDGET; i++) {
-        if (c->pc == c->program.end)
-            return NORMAL_EXIT;
-        if (c->pc < org)
-            return PC_OUT_OF_BOUNDS;
-        if (c->pc > c->program.end)
-            return PC_OUT_OF_BOUNDS;
-        step(c);
-    }
-    return TOOK_TOO_LONG;
-}
-
 void print_test_case(uint8_t *test, size_t length) {
     printf("testcase ");
     for (int i = 0; i < length; i++) {
