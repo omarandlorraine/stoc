@@ -40,3 +40,4 @@ void hexdump(stoc_t *r);
 void register_in_name(decl_t *d, char *name);
 void register_out_name(decl_t *d, char *name);
 void hexdump(stoc_t *c);
+void randomise_opcode(instruction_t * i);

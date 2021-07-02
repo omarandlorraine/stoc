@@ -10,17 +10,6 @@
 
 static pick_t zp_addresses;
 
-static void randomise_opcode(instruction_t * i) {
-retry:
-    i->opcode = rand();
-    if (!opcode_legal_p(i->opcode))
-        goto retry;
-    if (!addressing_modes[i->opcode])
-        goto retry;
-    if (addressing_modes[i->opcode] == &mode_relative)
-        goto retry;
-}
-
 static bool randomise_operand(rewrite_t *p, instruction_t *i) {
     // TODO: Can we think of a more sensible solution here?
     pick_t *mode = addressing_modes[i->opcode];

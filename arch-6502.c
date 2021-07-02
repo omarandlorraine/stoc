@@ -148,3 +148,13 @@ void hexdump(stoc_t *c) {
     fprintf(stderr, "\n");
 }
 
+void randomise_opcode(instruction_t * i) {
+retry:
+    i->opcode = rand();
+    if (!opcode_legal_p(i->opcode))
+        goto retry;
+    if (!addressing_modes[i->opcode])
+        goto retry;
+    if (addressing_modes[i->opcode] == &mode_relative)
+        goto retry;
+}
