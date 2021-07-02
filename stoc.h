@@ -94,7 +94,7 @@ typedef struct r1 {
     int blength;
 } rewrite_t;
 
-typedef struct c1 {
+typedef struct {
     uint8_t a;
     uint8_t x;
     uint8_t y;
