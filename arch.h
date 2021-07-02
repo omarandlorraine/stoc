@@ -43,3 +43,4 @@ void hexdump(stoc_t *c);
 void randomise_opcode(instruction_t * i);
 bool randomise_operand(rewrite_t *p, instruction_t *i);
 void archsearch_init();
+void install(stoc_t *c);

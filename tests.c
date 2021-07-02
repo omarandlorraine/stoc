@@ -22,22 +22,6 @@ static int num_test_cases = 0;
 
 uint8_t *testcases[TESTCASE_NO];
 
-void install(stoc_t *c) {
-    rewrite_t *r = &c->program;
-    uint16_t addr = r->org;
-    for (int i = 0; i < r->length; i++) {
-        uint8_t instr = r->instructions[i].opcode;
-        r->instructions[i].address = addr;
-        mem_write(c, addr++, instr);
-        if (opcode_length(instr) > 1)
-            mem_write(c, addr++, r->instructions[i].operand & 0x00ff);
-        if (opcode_length(instr) > 2)
-            mem_write(c, addr++, r->instructions[i].operand >> 8);
-    }
-    r->blength = addr - r->org;
-    r->end = r->org + r->blength;
-}
-
 void print_test_case(uint8_t *test, size_t length) {
     printf("testcase ");
     for (int i = 0; i < length; i++) {
