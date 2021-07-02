@@ -8,56 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static pick_t zp_addresses;
-
-static bool randomise_operand(rewrite_t *p, instruction_t *i) {
-    // TODO: Can we think of a more sensible solution here?
-    pick_t *mode = addressing_modes[i->opcode];
-    if (!mode)
-        return false;
-
-    if (mode == &mode_implied)
-        return true;
-
-    if (mode == &mode_immediate)
-        return random_constant(&i->operand);
-
-    if (mode == &mode_indirect_x)
-        return pick_at_random(&zp_addresses, &i->operand);
-
-    if (mode == &mode_indirect_y)
-        return pick_at_random(&zp_addresses, &i->operand);
-
-    if (mode == &mode_zero_page)
-        return pick_at_random(&zp_addresses, &i->operand);
-
-    if (mode == &mode_zero_page_x)
-        return pick_at_random(&zp_addresses, &i->operand);
-
-    if (mode == &mode_zero_page_y)
-        return pick_at_random(&zp_addresses, &i->operand);
-
-    if (mode == &mode_indirect)
-        return random_address(&i->operand);
-
-    if (mode == &mode_absolute)
-        return random_address(&i->operand);
-
-    if (mode == &mode_absolute_x)
-        return random_address(&i->operand);
-
-    if (mode == &mode_absolute_y)
-        return random_address(&i->operand);
-
-    if (mode == &mode_relative) {
-        printf("relative instruction error\n");
-        exit(1);
-    }
-
-    printf("unknown mode for %02x error\n", i->opcode);
-    exit(1);
-}
-
 static void randomise_instruction(rewrite_t *p, instruction_t *i) {
     do {
 		randomise_opcode(i);
@@ -275,15 +225,5 @@ void deadcodeelim(stoc_t *reference) {
 }
 
 void search_init() {
-
-    // We're going to find all defined zero-page addresses and add them to the
-    // zp_addresses pick.
-    initialize_pick(&zp_addresses);
-
-    iterator_t addr_it;
-    uint16_t address;
-
-    for (iterator_init(&addresses, &addr_it); pick_iterate(&addr_it, &address);)
-        if (address < 256)
-            pick_insert(&zp_addresses, address);
+	archsearch_init();
 }
