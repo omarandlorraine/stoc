@@ -91,4 +91,8 @@ int main(int argc, char **argv) {
         char *opt = argv[i];
         actions(opt, &c, argv[0]);
     }
+    free_decl(c.decl);
+
+    arch_deinit(&c);
+    testcase_deinit();
 }

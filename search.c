@@ -157,6 +157,8 @@ void stoc_opt(stoc_t *reference) {
         }
     }
     hexdump(&rewrite);
+    arch_deinit(&rewrite);
+    arch_deinit(&proposal);
 }
 
 bool exhsearch(stoc_t *reference, stoc_t *rewrite, int i) {
@@ -204,6 +206,7 @@ void stoc_exh(stoc_t *reference) {
         if (exhsearch(reference, &rewrite, i - 1))
             break;
     }
+    arch_deinit(&rewrite);
 }
 
 void deadcodeelim(stoc_t *reference) {
@@ -227,6 +230,8 @@ void deadcodeelim(stoc_t *reference) {
         }
     }
     hexdump(&rewrite);
+    arch_deinit(&rewrite);
+    arch_deinit(&proposal);
 }
 
 void search_init() { archsearch_init(); }

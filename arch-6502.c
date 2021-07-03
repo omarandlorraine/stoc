@@ -10,6 +10,8 @@ void arch_init(stoc_t *c) {
     memset(c->emu, 0, sizeof(context_t)); // shut valgrind up a bit
 }
 
+void arch_deinit(stoc_t *c) { free(c->emu); }
+
 uint8_t mem_read(context_t *c, uint16_t address) { return c->mem[address]; }
 
 uint8_t memory_read(stoc_t *c, uint16_t address) {

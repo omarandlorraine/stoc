@@ -42,3 +42,4 @@ int setup_live_out_memory(stoc_t *c, decl_t *d, uint8_t **scram);
 int setup_live_out_pointer(stoc_t *c, decl_t *d, uint8_t **scram);
 
 void extract_result(decl_t *d, stoc_t *reference);
+void free_decl(decl_t *d);

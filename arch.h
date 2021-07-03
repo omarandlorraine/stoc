@@ -47,3 +47,4 @@ bool randomise_operand(rewrite_t *p, instruction_t *i);
 void archsearch_init();
 void install(stoc_t *c);
 void arch_init(stoc_t *c);
+void arch_deinit(stoc_t *c);

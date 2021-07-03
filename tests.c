@@ -95,3 +95,8 @@ void measure(stoc_t *c) {
     }
     c->clockticks /= (i + 1);
 }
+
+void testcase_deinit() {
+    for (int i = 0; i < num_test_cases; i++)
+        free(testcases[i]);
+}

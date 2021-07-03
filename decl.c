@@ -107,3 +107,9 @@ int setup_live_out_pointer(stoc_t *c, decl_t *d, uint8_t **scram) {
         output_scram(scram, mem_read(c, addr++));
     return 0;
 }
+
+void free_decl(decl_t *d) {
+    if (d->next)
+        free_decl(d->next);
+    free(d);
+}
