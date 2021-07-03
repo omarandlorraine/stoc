@@ -142,13 +142,17 @@ void stoc_opt(stoc_t *reference) {
     measure(reference);
     stoc_t rewrite = *reference;
     stoc_t proposal;
+    arch_init(&rewrite);
+    arch_init(&proposal);
+    proposal.decl = rewrite.decl;
 
     for (int i = 0; i < 1000; i++) {
-        proposal = rewrite;
+        proposal.program = rewrite.program;
         for (int j = 0; j < 100; j++) {
             if (iterate(reference, &rewrite, &proposal)) {
-                rewrite = proposal;
+                rewrite.program = proposal.program;
                 i = 0;
+                hexdump(&rewrite);
             }
         }
     }
@@ -193,6 +197,7 @@ bool exhsearch(stoc_t *reference, stoc_t *rewrite, int i) {
 void stoc_exh(stoc_t *reference) {
     // Exhaustive search for equivalent program
     stoc_t rewrite = *reference;
+    arch_init(&rewrite);
 
     for (int i = 0; i < 10; i++) {
         rewrite.program.length = i;
