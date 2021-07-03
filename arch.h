@@ -5,7 +5,6 @@
  * @brief Architecture-specific things go here.
  */
 
-
 /** Write a value to the emulator's address space
  *
  * @param c Which emulated machine we're writing to the address space of
@@ -40,7 +39,7 @@ void hexdump(stoc_t *r);
 void register_in_name(decl_t *d, char *name);
 void register_out_name(decl_t *d, char *name);
 void hexdump(stoc_t *c);
-void randomise_opcode(instruction_t * i);
+void randomise_opcode(instruction_t *i);
 bool randomise_operand(rewrite_t *p, instruction_t *i);
 void archsearch_init();
 void install(stoc_t *c);

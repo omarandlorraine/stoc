@@ -10,7 +10,7 @@
 
 static void randomise_instruction(rewrite_t *p, instruction_t *i) {
     do {
-		randomise_opcode(i);
+        randomise_opcode(i);
     } while (!randomise_operand(p, i));
 }
 
@@ -229,6 +229,4 @@ void deadcodeelim(stoc_t *reference) {
     hexdump(&rewrite);
 }
 
-void search_init() {
-	archsearch_init();
-}
+void search_init() { archsearch_init(); }
