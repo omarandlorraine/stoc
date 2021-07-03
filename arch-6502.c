@@ -1,33 +1,47 @@
 #include "decl.h"
+#include "fake6502/fake6502.h"
 #include "stoc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-uint8_t mem_read(stoc_t *c, uint16_t address) { return c->mem[address]; }
+void arch_init(stoc_t *c) {
+    c->emu = malloc(sizeof(context_t));
+    memset(c->emu, 0, sizeof(context_t)); // shut valgrind up a bit
+}
 
-void mem_write(stoc_t *c, uint16_t address, uint8_t val) {
+uint8_t mem_read(context_t *c, uint16_t address) { return c->mem[address]; }
+
+uint8_t memory_read(stoc_t *c, uint16_t address) {
+    return mem_read(c->emu, address);
+}
+
+void mem_write(context_t *c, uint16_t address, uint8_t val) {
     c->mem[address] = val;
 }
 
+void memory_write(stoc_t *c, uint16_t address, uint8_t val) {
+    mem_write(c->emu, address, val);
+}
+
 int live_in_a(stoc_t *c, decl_t *d, uint8_t **scram) {
-    c->a = consume_scram(scram);
+    ((context_t *)c->emu)->a = consume_scram(scram);
     return 0;
 }
 
 int live_in_x(stoc_t *c, decl_t *d, uint8_t **scram) {
-    c->x = consume_scram(scram);
+    ((context_t *)c->emu)->x = consume_scram(scram);
     return 0;
 }
 
 int live_in_y(stoc_t *c, decl_t *d, uint8_t **scram) {
-    c->x = consume_scram(scram);
+    ((context_t *)c->emu)->y = consume_scram(scram);
     return 0;
 }
 
 int live_out_a(stoc_t *c, decl_t *d, uint8_t **scram) {
     uint8_t s = consume_scram(scram);
-    if (c->a == s) {
+    if (((context_t *)c->emu)->a == s) {
         return 0;
     } else {
         return 1;
@@ -35,26 +49,84 @@ int live_out_a(stoc_t *c, decl_t *d, uint8_t **scram) {
 }
 
 int setup_live_out_a(stoc_t *c, decl_t *d, uint8_t **scram) {
-    output_scram(scram, c->a);
+    output_scram(scram, ((context_t *)c->emu)->a);
     return 0;
 }
 
 int live_out_x(stoc_t *c, decl_t *d, uint8_t **scram) {
-    return c->x != consume_scram(scram);
+    return ((context_t *)c->emu)->x != consume_scram(scram);
 }
 
 int setup_live_out_x(stoc_t *c, decl_t *d, uint8_t **scram) {
-    output_scram(scram, c->x);
+    output_scram(scram, ((context_t *)c->emu)->x);
     return 0;
 }
 
 int live_out_y(stoc_t *c, decl_t *d, uint8_t **scram) {
-    return c->y != consume_scram(scram);
+    return ((context_t *)c->emu)->y != consume_scram(scram);
 }
 
 int setup_live_out_y(stoc_t *c, decl_t *d, uint8_t **scram) {
-    output_scram(scram, c->y);
+    output_scram(scram, ((context_t *)c->emu)->y);
     return 0;
+}
+
+int live_in_stack(stoc_t *c, decl_t *d, uint8_t **scram) {
+    memory_write(c, 0x0100 + ((context_t *)c->emu)->s--, consume_scram(scram));
+    return 0;
+}
+
+int setup_live_in_stack(stoc_t *c, decl_t *d, uint8_t **scram) {
+    **scram = rand();
+    return live_in_stack(c, d, scram);
+}
+
+int live_out_stack(stoc_t *c, decl_t *d, uint8_t **scram) {
+    return consume_scram(scram) !=
+           memory_read(c, 0x0100 + ((context_t *)c->emu)->s--);
+}
+
+int setup_live_out_stack(stoc_t *c, decl_t *d, uint8_t **scram) {
+    output_scram(scram, memory_read(c, 0x0100 + ((context_t *)c->emu)->s--));
+    return 0;
+}
+
+int start_decl(stoc_t *c, decl_t *d, uint8_t **scram) {
+    ((context_t *)c->emu)->a = consume_scram(scram);
+    ((context_t *)c->emu)->x = consume_scram(scram);
+    ((context_t *)c->emu)->y = consume_scram(scram);
+    ((context_t *)c->emu)->s = consume_scram(scram);
+    ((context_t *)c->emu)->flags = consume_scram(scram);
+    return 0;
+}
+
+int setup_start_decl(stoc_t *c, decl_t *d, uint8_t **scram) {
+    (*scram)[0] = rand();
+    (*scram)[1] = rand();
+    (*scram)[2] = rand();
+    (*scram)[3] = rand();
+    (*scram)[4] = rand();
+    return start_decl(c, d, scram);
+}
+
+#define COMPUTEBUDGET 10000
+int run_decl(stoc_t *c, decl_t *d, uint8_t **scram) {
+    addr_t org = c->program.org;
+    context_t *fake6502 = c->emu;
+    fake6502->pc = org;
+    fake6502->clockticks = 0;
+    for (int i = 0; i < COMPUTEBUDGET; i++) {
+        if (fake6502->pc == c->program.end) {
+            c->clockticks = fake6502->clockticks;
+            return false; // the routine exited normally
+        }
+        if (fake6502->pc < org)
+            return true; // program counter out of bounds
+        if (fake6502->pc > c->program.end)
+            return true; // program counter out of bounds
+        step(fake6502);
+    }
+    return true; // took too long
 }
 
 void register_in_name(decl_t *d, char *name) {
@@ -98,7 +170,7 @@ void hexdump(stoc_t *c) {
     rewrite_t *r = &c->program;
     printf("; starting at $%04x\n", r->org);
     printf("; %d instructions\n", r->length);
-    printf("; %d bytes\n; %lld clockticks\n", r->blength, c->clockticks);
+    printf("; %d bytes\n; %d clockticks\n", r->blength, c->clockticks);
     for (int i = 0; i < r->length; i++) {
         uint8_t instr = r->instructions[i].opcode;
         if (is_implied_instruction(instr)) {
@@ -150,7 +222,7 @@ void hexdump(stoc_t *c) {
 
 static pick_t zp_addresses;
 
-void randomise_opcode(instruction_t * i) {
+void randomise_opcode(instruction_t *i) {
 retry:
     i->opcode = rand();
     if (!opcode_legal_p(i->opcode))
@@ -210,16 +282,16 @@ bool randomise_operand(rewrite_t *p, instruction_t *i) {
 }
 
 void archsearch_init() {
-	// We're going to find all defined zero-page addresses and add them to the
-	// zp_addresses pick.
-	initialize_pick(&zp_addresses);
+    // We're going to find all defined zero-page addresses and add them to the
+    // zp_addresses pick.
+    initialize_pick(&zp_addresses);
 
-	iterator_t addr_it;
-	uint16_t address;
+    iterator_t addr_it;
+    uint16_t address;
 
-	for (iterator_init(&addresses, &addr_it); pick_iterate(&addr_it, &address);)
-		if (address < 256)
-			pick_insert(&zp_addresses, address);
+    for (iterator_init(&addresses, &addr_it); pick_iterate(&addr_it, &address);)
+        if (address < 256)
+            pick_insert(&zp_addresses, address);
 }
 
 void install(stoc_t *c) {
@@ -228,13 +300,12 @@ void install(stoc_t *c) {
     for (int i = 0; i < r->length; i++) {
         uint8_t instr = r->instructions[i].opcode;
         r->instructions[i].address = addr;
-        mem_write(c, addr++, instr);
+        memory_write(c, addr++, instr);
         if (opcode_length(instr) > 1)
-            mem_write(c, addr++, r->instructions[i].operand & 0x00ff);
+            memory_write(c, addr++, r->instructions[i].operand & 0x00ff);
         if (opcode_length(instr) > 2)
-            mem_write(c, addr++, r->instructions[i].operand >> 8);
+            memory_write(c, addr++, r->instructions[i].operand >> 8);
     }
     r->blength = addr - r->org;
     r->end = r->org + r->blength;
 }
-
