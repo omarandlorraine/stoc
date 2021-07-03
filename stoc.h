@@ -95,19 +95,9 @@ typedef struct r1 {
 } rewrite_t;
 
 typedef struct {
-    uint8_t a;
-    uint8_t x;
-    uint8_t y;
-    uint8_t flags;
-    uint8_t s;
-    uint16_t pc;
-    long long int clockticks;
+    void *emu;
+    int clockticks;
     rewrite_t program;
-    data_t mem[ADDR_SPACE];
-    uint8_t memf[ADDR_SPACE];
-    uint16_t ea;
-    uint8_t opcode;
-    int exitcode;
     struct _decl_t *decl;
 } stoc_t;
 
