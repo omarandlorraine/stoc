@@ -1,6 +1,6 @@
 #include "tests.h"
-#include "decl.h"
 #include "arch.h"
+#include "decl.h"
 #include "stoc.h"
 #include <inttypes.h>
 #include <stdio.h>
@@ -71,7 +71,7 @@ int equivalence(stoc_t *reference, stoc_t *rewrite) {
 }
 
 void measure(stoc_t *c) {
-	install(c);
+    install(c);
     if (!num_test_cases) {
         uint8_t *tc = malloc(TESTCASE_SZ);
 
@@ -87,7 +87,6 @@ void measure(stoc_t *c) {
     }
 
     c->clockticks = 0;
-    c->exitcode = 0;
 
     int i;
     for (i = 0; i < num_test_cases; i++) {
