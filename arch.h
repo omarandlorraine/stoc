@@ -38,8 +38,12 @@ void hexdump(stoc_t *r);
 // TODO: doxygen for these functions
 void register_in_name(decl_t *d, char *name);
 void register_out_name(decl_t *d, char *name);
+int live_in_stack(stoc_t *c, decl_t *d, uint8_t **scram);
+int setup_live_in_stack(stoc_t *c, decl_t *d, uint8_t **scram);
+
 void hexdump(stoc_t *c);
 void randomise_opcode(instruction_t *i);
 bool randomise_operand(rewrite_t *p, instruction_t *i);
 void archsearch_init();
 void install(stoc_t *c);
+void arch_init(stoc_t *c);

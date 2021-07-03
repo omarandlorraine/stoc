@@ -70,6 +70,7 @@ int main(int argc, char **argv) {
     pick_set_common_constants();
 
     stoc_t c;
+    arch_init(&c);
     c.clockticks = 0;
     set_optimization(optimize_speed);
 
