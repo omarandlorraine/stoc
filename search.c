@@ -83,19 +83,6 @@ static void swap_instrs(stoc_t *proposal) {
     proposal->program.instructions[offs2] = temp;
 }
 
-static bool checkem(rewrite_t *r) {
-    if (r->length >= REWRITE_LEN) {
-        // the rewrite has exceeded the maximum length
-        return false;
-    }
-
-    for (int i = 0; i < r->length - 1; i++)
-        if (!opcode_legal_p(r->instructions[i].opcode))
-            return false;
-
-    return true;
-}
-
 static void random_mutation(stoc_t *proposal) {
     int r = rand() % 6;
     switch (r) {
@@ -122,9 +109,6 @@ static void random_mutation(stoc_t *proposal) {
 
 static bool iterate(stoc_t *reference, stoc_t *rewrite, stoc_t *proposal) {
     random_mutation(proposal);
-
-    if (!checkem(&proposal->program))
-        return false;
 
     if (!equivalence(reference, proposal))
         return false;
