@@ -1,10 +1,10 @@
 CC=gcc
 CFLAGS=-g -Wall -Werror -pedantic
 LDOPTS = -lreadline
-ALL_MACHINES = stoc-6502 stoc-2a03 stoc-6510 stoc-65c02
+ALL_MACHINES = stoc-6502 stoc-2a03 stoc-6510 stoc-65c02 stoc-lr35902
 BUILD_DIR := build/
 SOURCES = tests.c main.c stoc.c search.c asm.c decl.c optimization.c pick.c
-GENERATED = gen-6502.c gen-6510.c gen-65c02.c gen-2a03.c
+GENERATED = gen-6502.c gen-6510.c gen-65c02.c gen-2a03.c gen-lr35902.c
 GENOBJECTS = $(GENERATED:%.c=$(BUILD_DIR)%.o)
 OBJECTS = $(SOURCES:%.c=$(BUILD_DIR)%.o)
 
@@ -26,6 +26,7 @@ clean:
 	rm -rf gen-*.c *.o $(ALL_MACHINES)
 	rm -rf build latex
 	make -C fake6502/ clean
+	make -C lr35902/ clean
 
 # Source file per target, generated at compile-time
 gen-6502.c gen-2a03.c: generate.py
@@ -36,6 +37,9 @@ gen-6510.c: generate.py
 
 gen-65c02.c: generate.py
 	cat opcodes/basic-6502 opcodes/cmos-6502-extra | ./generate.py > $@
+
+gen-lr35902.c: gener80.py
+	./gener80.py lr35902 > $@
 
 .PHONY: love
 love:
@@ -52,6 +56,10 @@ format:
 .PHONY: fake6502
 fake6502:
 	make -C fake6502 default
+
+.PHONY: lr35902
+lr35902:
+	make -C lr35902 default
 
 .PHONY: doxygen
 doxygen:
@@ -75,3 +83,7 @@ stoc-2a03: $(BUILD_DIR)gen-2a03.o $(OBJECTS) arch-6502.o
 stoc-65c02: $(BUILD_DIR)gen-65c02.o $(OBJECTS) arch-6502.o
 	make fake6502
 	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ fake6502/build/fake65c02.o
+
+stoc-lr35902: $(BUILD_DIR)gen-lr35902.o $(OBJECTS) arch-lr35902.o
+	make lr35902
+	$(CC) $(CFLAGS) $(LDOPTS) -o $@ $^ lr35902/build/lr35902.o
