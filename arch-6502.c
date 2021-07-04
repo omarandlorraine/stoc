@@ -283,6 +283,13 @@ bool randomise_operand(rewrite_t *p, instruction_t *i) {
     exit(1);
 }
 
+void mutate_opcode(instruction_t *i) {
+    uint16_t opcode = i->opcode;
+    pick_t *m = addressing_modes[opcode];
+    pick_at_random(m, &opcode);
+    i->opcode = opcode;
+}
+
 void archsearch_init() {
     // We're going to find all defined zero-page addresses and add them to the
     // zp_addresses pick.

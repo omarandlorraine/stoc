@@ -54,11 +54,7 @@ static void modify_opcode(stoc_t *proposal) {
     if (proposal->program.length == 0)
         return;
     int offs = rand() % (proposal->program.length);
-    instruction_t i = proposal->program.instructions[offs];
-    uint16_t opcode = i.opcode;
-    pick_t *m = addressing_modes[opcode];
-    pick_at_random(m, &opcode);
-    i.opcode = opcode;
+    mutate_opcode(&proposal->program.instructions[offs]);
 }
 
 static void replace_instr(stoc_t *proposal) {
