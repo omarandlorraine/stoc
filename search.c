@@ -114,6 +114,7 @@ static bool iterate(stoc_t *reference, stoc_t *rewrite, stoc_t *proposal) {
         return false;
 
     measure(proposal);
+    measure(rewrite);
     if (compare(proposal, rewrite) < 0)
         return true;
 
