@@ -61,7 +61,7 @@ typedef uint8_t data_t;
 
 typedef struct i1 {
     addr_t address;
-    uint8_t opcode;
+    uint16_t opcode;
     uint16_t operand;
 } instruction_t;
 

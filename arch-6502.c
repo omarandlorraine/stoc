@@ -226,7 +226,7 @@ static pick_t zp_addresses;
 
 void randomise_opcode(instruction_t *i) {
 retry:
-    i->opcode = rand();
+    i->opcode = rand() & 0xff;
     if (!opcode_legal_p(i->opcode))
         goto retry;
     if (!addressing_modes[i->opcode])
@@ -300,7 +300,7 @@ void install(stoc_t *c) {
     rewrite_t *r = &c->program;
     uint16_t addr = r->org;
     for (int i = 0; i < r->length; i++) {
-        uint8_t instr = r->instructions[i].opcode;
+        uint8_t instr = r->instructions[i].opcode & 0xff;
         r->instructions[i].address = addr;
         memory_write(c, addr++, instr);
         if (opcode_length(instr) > 1)
