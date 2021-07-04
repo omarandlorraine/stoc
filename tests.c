@@ -86,14 +86,15 @@ void measure(stoc_t *c) {
             testcases[num_test_cases++] = tc;
     }
 
-    c->clockticks = 0;
-
-    int i;
-    for (i = 0; i < num_test_cases; i++) {
-        if (run_test_case(testcases[i], c))
-            break;
+    int ticks = 0;
+    int count = 1;
+    for (int i = 0; i < num_test_cases; i++) {
+        if (!run_test_case(testcases[i], c)) {
+            ticks += c->clockticks;
+            count++;
+        }
     }
-    c->clockticks /= (i + 1);
+    c->clockticks = ticks / count;
 }
 
 void testcase_deinit() {
