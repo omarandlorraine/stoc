@@ -136,7 +136,7 @@ void stoc_opt(stoc_t *reference) {
             if (iterate(reference, &rewrite, &proposal)) {
                 rewrite.program = proposal.program;
                 i = 0;
-                hexdump(&rewrite);
+                // hexdump(&rewrite);
             }
         }
     }
@@ -146,14 +146,14 @@ void stoc_opt(stoc_t *reference) {
 }
 
 bool exhsearch(stoc_t *reference, stoc_t *rewrite, int i) {
-    // End of this branch
-    if (i < 0) {
-        if (equivalence(reference, rewrite)) {
-            hexdump(rewrite);
-            return true;
-        }
-        return false;
-    }
+	if (i < 0) {
+		// End of this branch
+		if (equivalence(reference, rewrite)) {
+			hexdump(rewrite);
+			return true;
+		}
+		return false;
+	}
 
     iterator_t opciter;
     iterator_t operiter;
