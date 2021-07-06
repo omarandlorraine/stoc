@@ -26,7 +26,7 @@ int live_in_memory(stoc_t *c, decl_t *d, uint8_t **scram) {
     uint16_t addr = d->start;
     int len = d->length;
     while (len--)
-        mem_write(c, addr++, consume_scram(scram));
+        memory_write(c, addr++, consume_scram(scram));
     return 0;
 }
 
@@ -38,13 +38,13 @@ int live_in_pointer(stoc_t *c, decl_t *d, uint8_t **scram) {
     uint16_t addr = (h << 8) | l;
 
     // Write the pointer to memory
-    mem_write(c, d->start, l);
-    mem_write(c, d->start + 1, h);
+    memory_write(c, d->start, l);
+    memory_write(c, d->start + 1, h);
 
     // Write "something" to the pointed-at location
     int len = d->length;
     while (len--)
-        mem_write(c, addr++, consume_scram(scram));
+        memory_write(c, addr++, consume_scram(scram));
     return 0;
 }
 
@@ -52,7 +52,7 @@ int live_out_memory(stoc_t *c, decl_t *d, uint8_t **scram) {
     uint16_t addr = d->start;
     int len = d->length;
     while (len--)
-        if (consume_scram(scram) != mem_read(c, addr++))
+        if (consume_scram(scram) != memory_read(c, addr++))
             return 1;
     return 0;
 }
@@ -61,7 +61,7 @@ int setup_live_out_memory(stoc_t *c, decl_t *d, uint8_t **scram) {
     uint16_t addr = d->start;
     int len = d->length;
     while (len--)
-        output_scram(scram, mem_read(c, addr++));
+        output_scram(scram, memory_read(c, addr++));
     return 0;
 }
 
@@ -75,15 +75,15 @@ int live_out_pointer(stoc_t *c, decl_t *d, uint8_t **scram) {
     uint16_t addr = (h << 8) | l;
 
     // Check the pointer
-    if (mem_read(c, d->start) != l)
+    if (memory_read(c, d->start) != l)
         return 1;
-    if (mem_read(c, d->start + 1) != h)
+    if (memory_read(c, d->start + 1) != h)
         return 1;
 
     // Check the pointed-to data
     int len = d->length;
     while (len--)
-        if (consume_scram(scram) != mem_read(c, addr++))
+        if (consume_scram(scram) != memory_read(c, addr++))
             return 1;
     return 0;
 }
@@ -93,8 +93,8 @@ int setup_live_out_pointer(stoc_t *c, decl_t *d, uint8_t **scram) {
     // This is going to bugger up support for other archs
 
     // Reconstruct the pointer
-    uint8_t l = mem_read(c, d->start);
-    uint8_t h = mem_read(c, d->start + 1);
+    uint8_t l = memory_read(c, d->start);
+    uint8_t h = memory_read(c, d->start + 1);
     uint16_t addr = (h << 8) | l;
 
     // Output the pointer
@@ -104,7 +104,7 @@ int setup_live_out_pointer(stoc_t *c, decl_t *d, uint8_t **scram) {
     // Output the pointed-to data
     int len = d->length;
     while (len--)
-        output_scram(scram, mem_read(c, addr++));
+        output_scram(scram, memory_read(c, addr++));
     return 0;
 }
 
