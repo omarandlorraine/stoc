@@ -1,7 +1,7 @@
 #include "decl.h"
 #include "stoc.h"
 
-int equivalence(stoc_t *a, stoc_t *b);
+bool equivalence(stoc_t *a, stoc_t *b);
 void measure(stoc_t *c);
 void testcase_deinit();
 
