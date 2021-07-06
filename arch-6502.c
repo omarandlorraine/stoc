@@ -303,6 +303,40 @@ void archsearch_init() {
             pick_insert(&zp_addresses, address);
 }
 
+bool exhsearch(stoc_t *reference, stoc_t *rewrite,  bool (*continuation)(stoc_t * reference, stoc_t * rewrite), int i) {
+    if (i < 0) {
+        // End of this branch
+        if (continuation(reference, rewrite)) {
+			return true;
+        }
+        return false;
+    }
+
+    iterator_t opciter;
+    iterator_t operiter;
+
+    uint16_t opcode;
+
+    for (iterator_init(&mode_implied, &opciter);
+         pick_iterate(&opciter, &opcode);) {
+        rewrite->program.instructions[i].opcode = opcode;
+        if (exhsearch(reference, rewrite, continuation, i - 1))
+            return true;
+    }
+
+    for (iterator_init(&mode_immediate, &opciter);
+         pick_iterate(&opciter, &opcode);) {
+        rewrite->program.instructions[i].opcode = opcode;
+        for (iterator_init(&constants, &operiter); pick_iterate(
+                 &operiter, &rewrite->program.instructions[i].operand);)
+            if (exhsearch(reference, rewrite, continuation, i - 1))
+                return true;
+    }
+
+    // TODO: Add other kinds of instructions here.
+    return false;
+}
+
 void install(stoc_t *c) {
     rewrite_t *r = &c->program;
     uint16_t addr = r->org;

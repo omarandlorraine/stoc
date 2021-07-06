@@ -142,41 +142,6 @@ void stoc_opt(stoc_t *reference) {
     arch_deinit(&proposal);
 }
 
-bool exhsearch(stoc_t *reference, stoc_t *rewrite, int i) {
-    if (i < 0) {
-        // End of this branch
-        if (equivalence(reference, rewrite)) {
-            hexdump(rewrite);
-            return true;
-        }
-        return false;
-    }
-
-    iterator_t opciter;
-    iterator_t operiter;
-
-    uint16_t opcode;
-
-    for (iterator_init(&mode_implied, &opciter);
-         pick_iterate(&opciter, &opcode);) {
-        rewrite->program.instructions[i].opcode = opcode;
-        if (exhsearch(reference, rewrite, i - 1))
-            return true;
-    }
-
-    for (iterator_init(&mode_immediate, &opciter);
-         pick_iterate(&opciter, &opcode);) {
-        rewrite->program.instructions[i].opcode = opcode;
-        for (iterator_init(&constants, &operiter); pick_iterate(
-                 &operiter, &rewrite->program.instructions[i].operand);)
-            if (exhsearch(reference, rewrite, i - 1))
-                return true;
-    }
-
-    // TODO: Add other kinds of instructions here.
-    return false;
-}
-
 void stoc_exh(stoc_t *reference) {
     // Exhaustive search for equivalent program
     stoc_t rewrite = *reference;
@@ -184,8 +149,10 @@ void stoc_exh(stoc_t *reference) {
 
     for (int i = 0; i < 10; i++) {
         rewrite.program.length = i;
-        if (exhsearch(reference, &rewrite, i - 1))
+        if (exhsearch(reference, &rewrite, equivalence, i - 1)) {
+			hexdump(&rewrite);
             break;
+		}
     }
     arch_deinit(&rewrite);
 }
