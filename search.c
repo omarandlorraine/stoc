@@ -178,7 +178,6 @@ void deadcodeelim(stoc_t *reference) {
         }
     }
     hexdump(&rewrite);
-    arch_deinit(&rewrite);
     arch_deinit(&proposal);
 }
 
