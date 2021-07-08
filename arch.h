@@ -48,5 +48,6 @@ void mutate_opcode(instruction_t *i);
 bool exhsearch(stoc_t *reference, stoc_t *rewrite,  bool (*continuation)(stoc_t * reference, stoc_t * rewrite), int i);
 void archsearch_init();
 void install(stoc_t *c);
+void read_prog(rewrite_t * p, uint8_t * raw, int length);
 void arch_init(stoc_t *c);
 void arch_deinit(stoc_t *c);
