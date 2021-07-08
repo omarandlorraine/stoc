@@ -63,6 +63,36 @@ void rndoper_rpimm16(rewrite_t *r, instruction_t *i) {
     }
 }
 
+instrdata_t * instrdata(instruction_t * i) {
+    int op = i->opcode & OPCODE_MASK;
+    int pref = i->opcode & PREFIX_MASK;
+
+    if(pref == PREFIX_NONE)
+        return &instrdata_none[op];
+
+    if(pref == PREFIX_ED)
+        return &instrdata_ed[op];
+
+    if(pref == PREFIX_CB)
+        return &instrdata_cb[op];
+
+    if(pref == PREFIX_DD)
+        return &instrdata_dd[op];
+
+    if(pref == PREFIX_FD)
+        return &instrdata_fd[op];
+
+    if(pref == PREFIX_DDCB)
+        return &instrdata_fdcb[op];
+
+    if(pref == PREFIX_FDCB)
+        return &instrdata_fdcb[op];
+    
+    fprintf(stderr, "Could not decode prefix of instruction %04x",
+        i->opcode);
+    exit(1);
+}
+
 #define REGISTER_A ((struct LR35902 *)c->emu)->registers[7]
 #define REGISTER_B ((struct LR35902 *)c->emu)->registers[0]
 #define REGISTER_C ((struct LR35902 *)c->emu)->registers[1]
@@ -178,12 +208,12 @@ void register_in_name(decl_t *d, char *name) {
         d->fn = live_in_a;
         return;
     }
-    if (!strcmp(name, "x")) {
-        d->fn = live_in_x;
+    if (!strcmp(name, "b")) {
+        d->fn = live_in_b;
         return;
     }
-    if (!strcmp(name, "y")) {
-        d->fn = live_in_y;
+    if (!strcmp(name, "c")) {
+        d->fn = live_in_c;
         return;
     }
     fprintf(stderr, "Unknown register name \"%s\" in " __FILE__ "\n", name);
@@ -196,18 +226,26 @@ void register_out_name(decl_t *d, char *name) {
         d->setup = setup_live_out_a;
         return;
     }
-    if (!strcmp(name, "x")) {
-        d->fn = live_out_x;
-        d->setup = setup_live_out_x;
+    if (!strcmp(name, "b")) {
+        d->fn = live_out_b;
+        d->setup = setup_live_out_b;
         return;
     }
-    if (!strcmp(name, "y")) {
-        d->fn = live_out_y;
-        d->setup = setup_live_out_y;
+    if (!strcmp(name, "c")) {
+        d->fn = live_out_c;
+        d->setup = setup_live_out_c;
         return;
     }
     fprintf(stderr, "Unknown register name \"%s\" in " __FILE__ "\n", name);
     exit(1);
+}
+
+void disasm_implied(instruction_t * i) {
+	printf("\t%s\n", instrdata(i)->dis1);
+}
+
+void disasm_rpimm16(instruction_t * i) {
+	printf("\t%s%04x%s\n", instrdata(i)->dis1, i->operand, instrdata(i)->dis2);
 }
 
 void hexdump(stoc_t *c) {
@@ -216,50 +254,8 @@ void hexdump(stoc_t *c) {
     printf("; %d instructions\n", r->length);
     printf("; %d bytes\n; %d clockticks\n", r->blength, c->clockticks);
     for (int i = 0; i < r->length; i++) {
-        uint8_t instr = r->instructions[i].opcode;
-        if (is_implied_instruction(instr)) {
-            fprintf(stderr, "\t%s\n", opnames[instr]);
-        } else if (is_immediate_instruction(instr)) {
-            fprintf(stderr, "\t%s #$%02x\n", opnames[instr],
-                    r->instructions[i].operand & 0x00ff);
-        } else if (is_zero_page_instruction(instr)) {
-            fprintf(stderr, "\t%s $%02x\n", opnames[instr],
-                    r->instructions[i].operand & 0x00ff);
-        } else if (is_zero_page_x_instruction(instr)) {
-            fprintf(stderr, "\t%s $%02x,x\n", opnames[instr],
-                    r->instructions[i].operand & 0x00ff);
-        } else if (is_zero_page_y_instruction(instr)) {
-            fprintf(stderr, "\t%s $%02x,y\n", opnames[instr],
-                    r->instructions[i].operand & 0x00ff);
-        } else if (is_absolute_instruction(instr)) {
-            fprintf(stderr, "\t%s $%04x\n", opnames[instr],
-                    r->instructions[i].operand);
-        } else if (is_absolute_y_instruction(instr)) {
-            fprintf(stderr, "\t%s $%04x,y\n", opnames[instr],
-                    r->instructions[i].operand);
-        } else if (is_absolute_x_instruction(instr)) {
-            fprintf(stderr, "\t%s $%04x,x\n", opnames[instr],
-                    r->instructions[i].operand);
-        } else if (is_indirect_instruction(instr)) {
-            fprintf(stderr, "\t%s $(%04x)\n", opnames[instr],
-                    r->instructions[i].operand & 0x00ff);
-        } else if (is_indirect_x_instruction(instr)) {
-            fprintf(stderr, "\t%s $(%02x),x\n", opnames[instr],
-                    r->instructions[i].operand & 0x00ff);
-        } else if (is_relative_instruction(instr)) {
-            fprintf(stderr, "\t%s * + %d\n", opnames[instr],
-                    r->instructions[i].operand & 0x00ff);
-        } else if (is_indirect_y_instruction(instr)) {
-            fprintf(stderr, "\t%s $(%02x,y)\n", opnames[instr],
-                    r->instructions[i].operand & 0x00ff);
-        } else {
-            fprintf(stderr, "\t$%02x", instr);
-            if (opcode_length(instr) > 1)
-                fprintf(stderr, " $%02x", r->instructions[i].operand & 0x00ff);
-            if (opcode_length(instr) > 2)
-                fprintf(stderr, " $%02x", r->instructions[i].operand >> 8);
-            fprintf(stderr, "\n");
-        }
+        instruction_t * instr = &r->instructions[i];
+		instrdata(instr)->disasm(instr);
     }
     fprintf(stderr, "\n");
 }
@@ -267,62 +263,12 @@ void hexdump(stoc_t *c) {
 static pick_t zp_addresses;
 
 void randomise_opcode(instruction_t *i) {
-retry:
-    i->opcode = rand();
-    if (!opcode_legal_p(i->opcode))
-        goto retry;
-    if (!addressing_modes[i->opcode])
-        goto retry;
-    if (addressing_modes[i->opcode] == &mode_relative)
-        goto retry;
+	pick_at_random(instrdata(i)->instrgroup, &i->opcode);
 }
 
 bool randomise_operand(rewrite_t *p, instruction_t *i) {
-    // TODO: Can we think of a more sensible solution here?
-    pick_t *mode = addressing_modes[i->opcode];
-    if (!mode)
-        return false;
-
-    if (mode == &mode_implied)
-        return true;
-
-    if (mode == &mode_immediate)
-        return random_constant(&i->operand);
-
-    if (mode == &mode_indirect_x)
-        return pick_at_random(&zp_addresses, &i->operand);
-
-    if (mode == &mode_indirect_y)
-        return pick_at_random(&zp_addresses, &i->operand);
-
-    if (mode == &mode_zero_page)
-        return pick_at_random(&zp_addresses, &i->operand);
-
-    if (mode == &mode_zero_page_x)
-        return pick_at_random(&zp_addresses, &i->operand);
-
-    if (mode == &mode_zero_page_y)
-        return pick_at_random(&zp_addresses, &i->operand);
-
-    if (mode == &mode_indirect)
-        return random_address(&i->operand);
-
-    if (mode == &mode_absolute)
-        return random_address(&i->operand);
-
-    if (mode == &mode_absolute_x)
-        return random_address(&i->operand);
-
-    if (mode == &mode_absolute_y)
-        return random_address(&i->operand);
-
-    if (mode == &mode_relative) {
-        printf("relative instruction error\n");
-        exit(1);
-    }
-
-    printf("unknown mode for %02x error\n", i->opcode);
-    exit(1);
+	instrdata(i)->rndoperand(p, i);
+	return true;
 }
 
 void archsearch_init() {
@@ -338,18 +284,127 @@ void archsearch_init() {
             pick_insert(&zp_addresses, address);
 }
 
+int preflen(instruction_t * i) {
+	uint16_t prefix = i->opcode & PREFIX_MASK;
+	if(prefix == PREFIX_NONE)
+		return 0;
+	if(prefix == PREFIX_ED)
+		return 1;
+	if(prefix == PREFIX_CB)
+		return 1;
+	if(prefix == PREFIX_DD)
+		return 1;
+	if(prefix == PREFIX_FD)
+		return 1;
+	if(prefix == PREFIX_DDCB)
+		return 2;
+	if(prefix == PREFIX_FDCB)
+		return 2;
+	fprintf(stderr, "Parse issue, no preflen for PREFIX %02x\n", prefix);
+	exit(1);
+	
+}
+
 void install(stoc_t *c) {
     rewrite_t *r = &c->program;
     uint16_t addr = r->org;
     for (int i = 0; i < r->length; i++) {
-        uint8_t instr = r->instructions[i].opcode;
-        r->instructions[i].address = addr;
-        memory_write(c, addr++, instr);
-        if (opcode_length(instr) > 1)
-            memory_write(c, addr++, r->instructions[i].operand & 0x00ff);
-        if (opcode_length(instr) > 2)
-            memory_write(c, addr++, r->instructions[i].operand >> 8);
+        instruction_t * instr = &r->instructions[i];
+        instr->address = addr;
+		instrdata_t * id = instrdata(instr);
+
+		if((instr->opcode & PREFIX_MASK) == PREFIX_NONE) {
+			// TODO: deal with prefixes
+			memory_write(c, addr++, instr->opcode);
+			if (id->operandlength > 1)
+				memory_write(c, addr++, instr->operand & 0x00ff);
+			if (id->operandlength > 2)
+				memory_write(c, addr++, instr->operand >> 8);
+		}
+		fprintf(stderr, "I don't know how to install this instruction");
+		exit(1);
     }
     r->blength = addr - r->org;
     r->end = r->org + r->blength;
+}
+
+void mutate_opcode(instruction_t *i) {
+	// TODO: Implement this properly
+	pick_at_random(&all_instructions, &i->opcode);
+}
+
+bool exhsearch(stoc_t *reference, stoc_t *rewrite,  bool (*continuation)(stoc_t * reference, stoc_t * rewrite), int i) {
+	fprintf(stderr, "TODO: Actually implement exhsearch for lr35902\n");
+	exit(1);
+}
+
+void read_prog(rewrite_t * r, uint8_t * raw, int length) {
+    int offs = 0;
+    int ins = 0;
+    int address = r->org;
+
+    for(;;) {
+        if(offs > length) break;
+
+        instruction_t *i = &(r->instructions[ins++]);
+        i->address = address;
+
+		uint8_t b = raw[offs++];
+		uint8_t c = raw[offs];
+
+		if(b == 0xed) {
+			i->opcode = PREFIX_ED | c;
+			offs++;
+		}
+
+		else if(b == 0xcb) {
+			i->opcode = PREFIX_CB | c;
+			offs++;
+		}
+
+		else if(b == 0xdd) {
+			if(c == 0xcb) {
+				offs++;
+				i->operand = PREFIX_DDCB | raw[offs++];
+				i->opcode = PREFIX_DDCB | raw[offs++];
+			}
+			else
+			{
+				i->opcode = PREFIX_DD | c;
+				offs++;
+			}
+		}
+
+		else if(b == 0xfd) {
+			if(c == 0xcb) {
+				offs++;
+				i->operand = PREFIX_DDCB | raw[offs++];
+				i->opcode = PREFIX_FDCB | raw[offs++];
+			}
+			else
+			{
+				i->opcode = PREFIX_FD | c;
+				offs++;
+			}
+		}
+		
+		else {
+			i->opcode = PREFIX_NONE | b;
+		}
+
+		if(instrdata(i)->operandlength == 1) {
+			offs++;
+			i->operand = raw[offs++];
+		}
+
+		if(instrdata(i)->operandlength == 2) {
+			offs++;
+			uint16_t l = raw[offs++];
+			uint16_t h = raw[offs++];
+			i->operand = (h << 8) | l;
+		}
+
+
+    }   
+    r->length = ins;
 }

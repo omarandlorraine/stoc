@@ -9,17 +9,21 @@
 #define OPCODE_MASK 0x00ff
 #include "arch.h"
 
+void disasm_implied(instruction_t *i);
+void disasm_rpimm16(instruction_t *i);
 void altop_implied(instruction_t *i);
 void altop_rpimm16(instruction_t *i);
 void rndoper_implied(rewrite_t *p, instruction_t *i);
 void rndoper_rpimm16(rewrite_t *p, instruction_t *i);
 
 typedef struct {
+    void (*disasm)(instruction_t *i);
     void (*altop)(instruction_t *i);
     void (*rndoperand)(rewrite_t *p, instruction_t *i);
+	pick_t * instrgroup;
     char *dis1;
     char *dis2;
-    int length;
+    int operandlength;
 } instrdata_t;
 
 extern instrdata_t instrdata_none[256];

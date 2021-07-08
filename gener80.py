@@ -45,8 +45,8 @@ for p in prefixes:
 		o = [ o for o in opcodes if o.prefix == p and o.codepoint == c]
 		if len(o):
 			oc = o[0]
-			print("\t{altop_%s, rndoper_%s, \"%s\", \"%s\", %d}," %
-				(oc.group, oc.group, oc.dis1, oc.dis2, oc.length))
+			print("\t{disasm_%s, altop_%s, rndoper_%s, &instructions_%s, \"%s\", \"%s\", %d}," %
+				(oc.group, oc.group, oc.group, oc.group, oc.dis1, oc.dis2, oc.length))
 		else:
 			print("\t{0},")
 	print("};\n\n")
