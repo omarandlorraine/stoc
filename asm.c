@@ -94,26 +94,14 @@ decl_t *parse_run(rewrite_t *r) {
     d->length = 0;
 
     char *t;
-    int instrcnt = 0;
+	uint8_t program[1024];
+	int offs = 0;
     while ((t = strtok(NULL, DELIM))) {
-        instruction_t *i = &(r->instructions[instrcnt++]);
-        i->opcode = parse_byte(t);
-        i->address = start + d->length;
-        d->length++;
-
-        if (opcode_length(i->opcode) == 2) {
-            i->operand = parse_byte(strtok(NULL, DELIM));
-            d->length++;
-        }
-
-        if (opcode_length(i->opcode) == 3) {
-            uint16_t l = parse_byte(strtok(NULL, DELIM));
-            uint16_t h = parse_byte(strtok(NULL, DELIM));
-            i->operand = (h << 8) | l;
-            d->length += 2;
-        }
-    }
-    r->length = instrcnt;
+		program[offs++] = parse_byte(t);
+		d->length++;
+	}
+	d->length--;
+	read_prog(r, program, d->length);
     r->blength = d->length;
     r->org = d->start;
     d->fn = run_decl;
