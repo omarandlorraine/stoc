@@ -377,7 +377,6 @@ void read_prog(rewrite_t * r, uint8_t * raw, int length) {
 			uint16_t l = raw[offs++];
 			uint16_t h = raw[offs++];
 			i->operand = (h << 8) | l;
-			printf(" %04x", i->operand);
 		}
 	}
 	r->length = ins;
