@@ -19,7 +19,6 @@
 #define IMPLIED 11
 
 bool opcode_legal_p(uint8_t op);
-int opcode_length(uint8_t op);
 int opcode_branch_p(uint8_t op);
 bool implied_instruction(char *op, uint8_t *out);
 int is_implied_instruction(uint8_t op);
