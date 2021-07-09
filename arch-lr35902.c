@@ -67,28 +67,28 @@ instrdata_t * instrdata(instruction_t * i) {
     int op = i->opcode & OPCODE_MASK;
     int pref = i->opcode & PREFIX_MASK;
 
-    if(pref == PREFIX_NONE)
+    if(pref == PREFIX_NONE && instrdata_none[op].dis1)
         return &instrdata_none[op];
 
-    if(pref == PREFIX_ED)
+    if(pref == PREFIX_ED && instrdata_ed[op].dis1)
         return &instrdata_ed[op];
 
-    if(pref == PREFIX_CB)
+    if(pref == PREFIX_CB && instrdata_cb[op].dis1)
         return &instrdata_cb[op];
 
-    if(pref == PREFIX_DD)
+    if(pref == PREFIX_DD && instrdata_dd[op].dis1)
         return &instrdata_dd[op];
 
-    if(pref == PREFIX_FD)
+    if(pref == PREFIX_FD && instrdata_fd[op].dis1)
         return &instrdata_fd[op];
 
-    if(pref == PREFIX_DDCB)
+    if(pref == PREFIX_DDCB && instrdata_fdcb[op].dis1)
         return &instrdata_fdcb[op];
 
-    if(pref == PREFIX_FDCB)
+    if(pref == PREFIX_FDCB && instrdata_fdcb[op].dis1)
         return &instrdata_fdcb[op];
     
-    fprintf(stderr, "Could not decode prefix of instruction %04x",
+    fprintf(stderr, "No instruction data for instruction %04x",
         i->opcode);
     exit(1);
 }
