@@ -22,9 +22,9 @@ def addopc(prefix, codepoint, group, dis1, dis2, length):
 
 # First add all the base opcodes; these are supported by the Intel 8080 and all others.
 
-addopc("none", 0x00, "implied", "nop", "", 1)
+addopc("none", 0x00, "implied", "nop", "", 0)
 for a,r in enumerate(rp):
-	addopc("none", 1 + a * 8, "rpimm16", "ld %s, " % rp[a], "", 3)
+	addopc("none", 1 + a * 8, "rpimm16", "ld %s, " % rp[a], "", 2)
 
 print("#include \"stoc.h\"")
 print("#include \"arch-%s.h\"" % sys.argv[1])
