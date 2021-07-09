@@ -10,8 +10,8 @@
 
 void arch_init(stoc_t *c) {
     c->emu = malloc(sizeof(struct LR35902));
-    ((struct LR35902 *)c->emu)->userdata = malloc(ADDRSPACE);
     memset(c->emu, 0, sizeof(struct LR35902)); // shut valgrind up a bit
+    ((struct LR35902 *)c->emu)->userdata = malloc(ADDRSPACE);
     memset(((struct LR35902 *)c->emu)->userdata, 0, ADDRSPACE);
 }
 
@@ -320,9 +320,10 @@ void install(stoc_t *c) {
 				memory_write(c, addr++, instr->operand & 0x00ff);
 			if (id->operandlength > 2)
 				memory_write(c, addr++, instr->operand >> 8);
+		} else {
+			fprintf(stderr, "I don't know how to install this instruction %04x\n", instr->opcode);
+			exit(1);
 		}
-		fprintf(stderr, "I don't know how to install this instruction");
-		exit(1);
     }
     r->blength = addr - r->org;
     r->end = r->org + r->blength;
@@ -398,13 +399,10 @@ void read_prog(rewrite_t * r, uint8_t * raw, int length) {
 		}
 
 		if(instrdata(i)->operandlength == 2) {
-			offs++;
 			uint16_t l = raw[offs++];
 			uint16_t h = raw[offs++];
 			i->operand = (h << 8) | l;
 		}
-
-
     }   
     r->length = ins;
 }
