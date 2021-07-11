@@ -88,7 +88,7 @@ instrdata_t * instrdata(instruction_t * i) {
     if(pref == PREFIX_FDCB && instrdata_fdcb[op].dis1)
         return &instrdata_fdcb[op];
     
-    fprintf(stderr, "No instruction data for instruction %04x",
+    fprintf(stderr, "No instruction data for instruction %04x\n",
         i->opcode);
     exit(1);
 }
@@ -316,9 +316,9 @@ void install(stoc_t *c) {
 		if((instr->opcode & PREFIX_MASK) == PREFIX_NONE) {
 			// TODO: deal with prefixes
 			memory_write(c, addr++, instr->opcode);
-			if (id->operandlength > 1)
+			if (id->operandlength >= 1)
 				memory_write(c, addr++, instr->operand & 0x00ff);
-			if (id->operandlength > 2)
+			if (id->operandlength >= 2)
 				memory_write(c, addr++, instr->operand >> 8);
 		} else {
 			fprintf(stderr, "I don't know how to install this instruction %04x\n", instr->opcode);
