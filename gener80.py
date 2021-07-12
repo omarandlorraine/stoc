@@ -3,17 +3,18 @@
 import sys
 from collections import namedtuple
 
-groups = ["implied", "rpimm16"]
+groups = ["implied", "rpimm16", "rimm8"]
 prefixes = ["none", "ed", "cb", "dd", "fd", "ddcb", "fdcb"]
 
 Opcode = namedtuple("Opcode", "prefix codepoint group dis1 dis2 length")
 
 opcodes = []
 
-rp = ["bc", "de", "hl", "sp"]
-rp2 = ["bc", "de", "hl", "af"]
-cc = ["nz", "z", "nc", "c", "po", "pe", "p", "m"]
-alu = ["add a,", "adc a,", "sub", "sbc a,", "and", "xor", "or", "cp"]
+registers = ["b", "c", "d", "e", "h", "l", "(hl)", "a"]
+register_pairs = ["bc", "de", "hl", "sp"]
+register_pairs_with_af = ["bc", "de", "hl", "af"]
+condition_codes = ["nz", "z", "nc", "c", "po", "pe", "p", "m"]
+alu_functions = ["add a,", "adc a,", "sub", "sbc a,", "and", "xor", "or", "cp"]
 
 def addopc(prefix, codepoint, group, dis1, dis2, length):
 	assert prefix in prefixes
@@ -44,15 +45,31 @@ addopc("none", 0x17, "implied", "rla", "", 0)
 addopc("none", 0x0f, "implied", "rrca", "", 0)
 addopc("none", 0x1f, "implied", "rra", "", 0)
 
-for a,r in enumerate(rp):
+for a,r in enumerate(register_pairs):
 	p = a << 4
-	addopc("none", 1 + p, "rpimm16", "ld %s, " % rp[a], "", 2)
-	addopc("none", 9 + p, "rpimm16", "add hl, %s" % rp[a], "", 0)
+	addopc("none", 1 + p, "rpimm16", "ld %s, " % register_pairs[a], "", 2)
+	addopc("none", 9 + p, "rpimm16", "add hl, %s" % register_pairs[a], "", 0)
+	addopc("none", codepoint(z=3, p=a), "implied", "inc %s" % register_pairs[a], "", 0)
+	addopc("none", codepoint(z=3, p=a, q=1), "implied", "dec %s" % register_pairs[a], "", 0)
+
+for a,r in enumerate(registers):
+	addopc("none", codepoint(z=4, y=a), "implied", "inc %s" % r, "", 0)
+	addopc("none", codepoint(z=5, y=a), "implied", "dec %s" % r, "", 0)
+	addopc("none", codepoint(z=6, y=a), "rimm8", "ld %s, " % r, "", 0)
+
+for s, sr in enumerate(registers):
+	for d, dr in enumerate(registers):
+		if sr == "(hl)" and dr == "(hl)":
+			# We can't put the HALT instruction in becausee it scuppers stoc
+			# addopc("none", codepoint(x=1, y=s, z=d), "implied", "halt", "", 0)
+			pass
+		else:
+			addopc("none", codepoint(x=1, y=s, z=d), "implied", "ld %s, %s" % (sr, dr), "", 0)
 
 # Next add the LR35902 specific opcodes
 if sys.argv[1] == "lr35902":
 	addopc("none", codepoint(y=1), "rpimm16", "ld (", "), sp", 0)
-	addopc("none", codepoint(y=2), "rpimm16", "stop", "", 0)
+	addopc("none", codepoint(y=2), "implied", "stop", "", 0)
 
 
 # Next add the Z80 specific opcodes

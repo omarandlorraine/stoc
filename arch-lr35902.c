@@ -41,8 +41,11 @@ void altop_implied(instruction_t *i) {
     pick_at_random(&instructions_implied, &i->opcode);
 }
 
+void altop_rimm8(instruction_t *i) {
+    pick_at_random(&instructions_rimm8, &i->opcode);
+}
+
 void altop_rpimm16(instruction_t *i) {
-    // Alter the opcode for implied instructions
     pick_at_random(&instructions_rpimm16, &i->opcode);
 }
 
@@ -51,15 +54,23 @@ void rndoper_implied(rewrite_t *r, instruction_t *i) {
     // nothing to do.
 }
 
+void rndoper_rimm8(rewrite_t *r, instruction_t *i) {
+    // Randomise either the register,
+    // or the 1-byte immediate operand
+    if (rand() & 0x01) {
+        pick_at_random(&constants, &i->operand);
+    } else {
+        pick_at_random(&instructions_rimm8, &i->opcode);
+    }
+}
+
 void rndoper_rpimm16(rewrite_t *r, instruction_t *i) {
     // Randomise either the register pair,
     // or the 2-byte immediate operand
     if (rand() & 0x01) {
         pick_at_random(&constants, &i->operand);
     } else {
-        uint16_t rp = rand() & 0x38;
-        i->opcode &= ~0x38;
-        i->opcode |= rp;
+        pick_at_random(&instructions_rpimm16, &i->opcode);
     }
 }
 
@@ -127,7 +138,12 @@ int setup_live_out_a(stoc_t *c, decl_t *d, uint8_t **scram) {
 }
 
 int live_out_b(stoc_t *c, decl_t *d, uint8_t **scram) {
-    return REGISTER_B != consume_scram(scram);
+    uint8_t s = consume_scram(scram);
+    if (REGISTER_B == s) {
+        return 0;
+    } else {
+        return 1;
+    }
 }
 
 int setup_live_out_b(stoc_t *c, decl_t *d, uint8_t **scram) {
@@ -136,7 +152,12 @@ int setup_live_out_b(stoc_t *c, decl_t *d, uint8_t **scram) {
 }
 
 int live_out_c(stoc_t *c, decl_t *d, uint8_t **scram) {
-    return REGISTER_C != consume_scram(scram);
+    uint8_t s = consume_scram(scram);
+    if (REGISTER_C == s) {
+        return 0;
+    } else {
+        return 1;
+    }
 }
 
 int setup_live_out_c(stoc_t *c, decl_t *d, uint8_t **scram) {
@@ -245,7 +266,7 @@ void disasm_implied(instruction_t * i) {
 }
 
 void disasm_rimm8(instruction_t * i) {
-	printf("\t%s%02x%s\n", instrdata(i)->dis1, i->operand, instrdata(i)->dis2);
+	printf("\t%s%02x%s\n", instrdata(i)->dis1, i->operand & 0xffU, instrdata(i)->dis2);
 }
 
 void disasm_rpimm16(instruction_t * i) {

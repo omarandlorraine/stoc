@@ -10,10 +10,13 @@
 #include "arch.h"
 
 void disasm_implied(instruction_t *i);
+void disasm_rimm8(instruction_t *i);
 void disasm_rpimm16(instruction_t *i);
 void altop_implied(instruction_t *i);
+void altop_rimm8(instruction_t *i);
 void altop_rpimm16(instruction_t *i);
 void rndoper_implied(rewrite_t *p, instruction_t *i);
+void rndoper_rimm8(rewrite_t *p, instruction_t *i);
 void rndoper_rpimm16(rewrite_t *p, instruction_t *i);
 
 typedef struct {
@@ -36,4 +39,5 @@ extern instrdata_t instrdata_fdcb[256];
 
 extern pick_t all_instructions;
 extern pick_t instructions_implied;
+extern pick_t instructions_rimm8;
 extern pick_t instructions_rpimm16;

@@ -1,7 +1,7 @@
 #pragma once
 #include <stdbool.h>
 #include <stdint.h>
-#define MAXPICKSIZE 50
+#define MAXPICKSIZE 500
 
 /**
  * @file
