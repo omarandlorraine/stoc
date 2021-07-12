@@ -8,6 +8,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static bool intermediates = false;
+
+void cmdlin_intermediates() { intermediates = true; }
+
 static void randomise_instruction(rewrite_t *p, instruction_t *i) {
     do {
         randomise_opcode(i);
@@ -133,7 +137,8 @@ void stoc_opt(stoc_t *reference) {
             if (iterate(reference, &rewrite, &proposal)) {
                 rewrite.program = proposal.program;
                 i = 0;
-                // hexdump(&rewrite);
+                if (intermediates)
+                    hexdump(&rewrite);
             }
         }
     }

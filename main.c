@@ -37,6 +37,10 @@ void parseoption(char *opt, char *progname) {
         cmdlin_tcout();
         return;
     }
+    if (!strcmp(opt, "-i")) {
+        cmdlin_intermediates();
+        return;
+    }
     fprintf(stderr, "Unknown option %s\n", opt);
     help(progname);
 }

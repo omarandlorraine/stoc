@@ -32,3 +32,4 @@ void stoc_opt(stoc_t *reference);
 void stoc_exh(stoc_t *reference);
 
 void search_init();
+void cmdlin_intermediates();
