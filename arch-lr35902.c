@@ -244,6 +244,10 @@ void disasm_implied(instruction_t * i) {
 	printf("\t%s\n", instrdata(i)->dis1);
 }
 
+void disasm_rimm8(instruction_t * i) {
+	printf("\t%s%02x%s\n", instrdata(i)->dis1, i->operand, instrdata(i)->dis2);
+}
+
 void disasm_rpimm16(instruction_t * i) {
 	printf("\t%s%04x%s\n", instrdata(i)->dis1, i->operand, instrdata(i)->dis2);
 }
