@@ -23,13 +23,11 @@ static bool tcout = false;
 
 uint8_t *testcases[TESTCASE_NO];
 
-void cmdlin_tcout() {
-	tcout = true;
-}
+void cmdlin_tcout() { tcout = true; }
 
 void print_test_case(uint8_t *test, size_t length) {
-	if(!tcout)
-		return;
+    if (!tcout)
+        return;
     printf("testcase ");
     for (int i = 0; i < length; i++) {
         printf("$%02x ", test[i]);

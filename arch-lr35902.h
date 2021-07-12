@@ -23,7 +23,7 @@ typedef struct {
     void (*disasm)(instruction_t *i);
     void (*altop)(instruction_t *i);
     void (*rndoperand)(rewrite_t *p, instruction_t *i);
-	pick_t * instrgroup;
+    pick_t *instrgroup;
     char *dis1;
     char *dis2;
     int operandlength;

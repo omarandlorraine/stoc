@@ -305,11 +305,13 @@ void archsearch_init() {
             pick_insert(&zp_addresses, address);
 }
 
-bool exhsearch(stoc_t *reference, stoc_t *rewrite,  bool (*continuation)(stoc_t * reference, stoc_t * rewrite), int i) {
+bool exhsearch(stoc_t *reference, stoc_t *rewrite,
+               bool (*continuation)(stoc_t *reference, stoc_t *rewrite),
+               int i) {
     if (i < 0) {
         // End of this branch
         if (continuation(reference, rewrite)) {
-			return true;
+            return true;
         }
         return false;
     }
@@ -355,29 +357,29 @@ void install(stoc_t *c) {
     r->end = r->org + r->blength;
 }
 
-void read_prog(rewrite_t * r, uint8_t * raw, int length) {
-	int offs = 0;
-	int ins = 0;
-	int address = r->org;
+void read_prog(rewrite_t *r, uint8_t *raw, int length) {
+    int offs = 0;
+    int ins = 0;
+    int address = r->org;
 
-	for(;;) {
-		if(offs > length) break;
+    for (;;) {
+        if (offs > length)
+            break;
 
-		instruction_t *i = &(r->instructions[ins++]);
+        instruction_t *i = &(r->instructions[ins++]);
 
+        i->opcode = raw[offs++];
+        i->address = address;
 
-		i->opcode = raw[offs++];
-		i->address = address;
+        if (opcode_length(i->opcode) == 2) {
+            i->operand = raw[offs++];
+        }
 
-		if (opcode_length(i->opcode) == 2) {
-			i->operand = raw[offs++];
-		}
-
-		if (opcode_length(i->opcode) == 3) {
-			uint16_t l = raw[offs++];
-			uint16_t h = raw[offs++];
-			i->operand = (h << 8) | l;
-		}
-	}
-	r->length = ins;
+        if (opcode_length(i->opcode) == 3) {
+            uint16_t l = raw[offs++];
+            uint16_t h = raw[offs++];
+            i->operand = (h << 8) | l;
+        }
+    }
+    r->length = ins;
 }

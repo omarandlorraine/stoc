@@ -155,9 +155,9 @@ void stoc_exh(stoc_t *reference) {
     for (int i = 0; i < 10; i++) {
         rewrite.program.length = i;
         if (exhsearch(reference, &rewrite, equivalence, i - 1)) {
-			hexdump(&rewrite);
+            hexdump(&rewrite);
             break;
-		}
+        }
     }
     arch_deinit(&rewrite);
 }

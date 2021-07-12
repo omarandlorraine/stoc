@@ -74,33 +74,32 @@ void rndoper_rpimm16(rewrite_t *r, instruction_t *i) {
     }
 }
 
-instrdata_t * instrdata(instruction_t * i) {
+instrdata_t *instrdata(instruction_t *i) {
     int op = i->opcode & OPCODE_MASK;
     int pref = i->opcode & PREFIX_MASK;
 
-    if(pref == PREFIX_NONE && instrdata_none[op].dis1)
+    if (pref == PREFIX_NONE && instrdata_none[op].dis1)
         return &instrdata_none[op];
 
-    if(pref == PREFIX_ED && instrdata_ed[op].dis1)
+    if (pref == PREFIX_ED && instrdata_ed[op].dis1)
         return &instrdata_ed[op];
 
-    if(pref == PREFIX_CB && instrdata_cb[op].dis1)
+    if (pref == PREFIX_CB && instrdata_cb[op].dis1)
         return &instrdata_cb[op];
 
-    if(pref == PREFIX_DD && instrdata_dd[op].dis1)
+    if (pref == PREFIX_DD && instrdata_dd[op].dis1)
         return &instrdata_dd[op];
 
-    if(pref == PREFIX_FD && instrdata_fd[op].dis1)
+    if (pref == PREFIX_FD && instrdata_fd[op].dis1)
         return &instrdata_fd[op];
 
-    if(pref == PREFIX_DDCB && instrdata_fdcb[op].dis1)
+    if (pref == PREFIX_DDCB && instrdata_fdcb[op].dis1)
         return &instrdata_fdcb[op];
 
-    if(pref == PREFIX_FDCB && instrdata_fdcb[op].dis1)
+    if (pref == PREFIX_FDCB && instrdata_fdcb[op].dis1)
         return &instrdata_fdcb[op];
-    
-    fprintf(stderr, "No instruction data for instruction %04x\n",
-        i->opcode);
+
+    fprintf(stderr, "No instruction data for instruction %04x\n", i->opcode);
     exit(1);
 }
 
@@ -261,16 +260,15 @@ void register_out_name(decl_t *d, char *name) {
     exit(1);
 }
 
-void disasm_implied(instruction_t * i) {
-	printf("\t%s\n", instrdata(i)->dis1);
+void disasm_implied(instruction_t *i) { printf("\t%s\n", instrdata(i)->dis1); }
+
+void disasm_rimm8(instruction_t *i) {
+    printf("\t%s%02x%s\n", instrdata(i)->dis1, i->operand & 0xffU,
+           instrdata(i)->dis2);
 }
 
-void disasm_rimm8(instruction_t * i) {
-	printf("\t%s%02x%s\n", instrdata(i)->dis1, i->operand & 0xffU, instrdata(i)->dis2);
-}
-
-void disasm_rpimm16(instruction_t * i) {
-	printf("\t%s%04x%s\n", instrdata(i)->dis1, i->operand, instrdata(i)->dis2);
+void disasm_rpimm16(instruction_t *i) {
+    printf("\t%s%04x%s\n", instrdata(i)->dis1, i->operand, instrdata(i)->dis2);
 }
 
 void hexdump(stoc_t *c) {
@@ -279,8 +277,8 @@ void hexdump(stoc_t *c) {
     printf("; %d instructions\n", r->length);
     printf("; %d bytes\n; %d clockticks\n", r->blength, c->clockticks);
     for (int i = 0; i < r->length; i++) {
-        instruction_t * instr = &r->instructions[i];
-		instrdata(instr)->disasm(instr);
+        instruction_t *instr = &r->instructions[i];
+        instrdata(instr)->disasm(instr);
     }
     fprintf(stderr, "\n");
 }
@@ -288,12 +286,12 @@ void hexdump(stoc_t *c) {
 static pick_t zp_addresses;
 
 void randomise_opcode(instruction_t *i) {
-	pick_at_random(instrdata(i)->instrgroup, &i->opcode);
+    pick_at_random(instrdata(i)->instrgroup, &i->opcode);
 }
 
 bool randomise_operand(rewrite_t *p, instruction_t *i) {
-	instrdata(i)->rndoperand(p, i);
-	return true;
+    instrdata(i)->rndoperand(p, i);
+    return true;
 }
 
 void archsearch_init() {
@@ -309,125 +307,125 @@ void archsearch_init() {
             pick_insert(&zp_addresses, address);
 }
 
-int preflen(instruction_t * i) {
-	uint16_t prefix = i->opcode & PREFIX_MASK;
-	if(prefix == PREFIX_NONE)
-		return 0;
-	if(prefix == PREFIX_ED)
-		return 1;
-	if(prefix == PREFIX_CB)
-		return 1;
-	if(prefix == PREFIX_DD)
-		return 1;
-	if(prefix == PREFIX_FD)
-		return 1;
-	if(prefix == PREFIX_DDCB)
-		return 2;
-	if(prefix == PREFIX_FDCB)
-		return 2;
-	fprintf(stderr, "Parse issue, no preflen for PREFIX %02x\n", prefix);
-	exit(1);
-	
+int preflen(instruction_t *i) {
+    uint16_t prefix = i->opcode & PREFIX_MASK;
+    if (prefix == PREFIX_NONE)
+        return 0;
+    if (prefix == PREFIX_ED)
+        return 1;
+    if (prefix == PREFIX_CB)
+        return 1;
+    if (prefix == PREFIX_DD)
+        return 1;
+    if (prefix == PREFIX_FD)
+        return 1;
+    if (prefix == PREFIX_DDCB)
+        return 2;
+    if (prefix == PREFIX_FDCB)
+        return 2;
+    fprintf(stderr, "Parse issue, no preflen for PREFIX %02x\n", prefix);
+    exit(1);
 }
 
 void install(stoc_t *c) {
     rewrite_t *r = &c->program;
     uint16_t addr = r->org;
     for (int i = 0; i < r->length; i++) {
-        instruction_t * instr = &r->instructions[i];
+        instruction_t *instr = &r->instructions[i];
         instr->address = addr;
-		instrdata_t * id = instrdata(instr);
+        instrdata_t *id = instrdata(instr);
 
-		if((instr->opcode & PREFIX_MASK) == PREFIX_NONE) {
-			// TODO: deal with prefixes
-			memory_write(c, addr++, instr->opcode);
-			if (id->operandlength >= 1)
-				memory_write(c, addr++, instr->operand & 0x00ff);
-			if (id->operandlength >= 2)
-				memory_write(c, addr++, instr->operand >> 8);
-		} else {
-			fprintf(stderr, "I don't know how to install this instruction %04x\n", instr->opcode);
-			exit(1);
-		}
+        if ((instr->opcode & PREFIX_MASK) == PREFIX_NONE) {
+            // TODO: deal with prefixes
+            memory_write(c, addr++, instr->opcode);
+            if (id->operandlength >= 1)
+                memory_write(c, addr++, instr->operand & 0x00ff);
+            if (id->operandlength >= 2)
+                memory_write(c, addr++, instr->operand >> 8);
+        } else {
+            fprintf(stderr,
+                    "I don't know how to install this instruction %04x\n",
+                    instr->opcode);
+            exit(1);
+        }
     }
     r->blength = addr - r->org;
     r->end = r->org + r->blength;
 }
 
 void mutate_opcode(instruction_t *i) {
-	// TODO: Implement this properly
-	pick_at_random(&all_instructions, &i->opcode);
+    // TODO: Implement this properly
+    pick_at_random(&all_instructions, &i->opcode);
 }
 
-bool exhsearch(stoc_t *reference, stoc_t *rewrite,  bool (*continuation)(stoc_t * reference, stoc_t * rewrite), int i) {
-	fprintf(stderr, "TODO: Actually implement exhsearch for lr35902\n");
-	exit(1);
+bool exhsearch(stoc_t *reference, stoc_t *rewrite,
+               bool (*continuation)(stoc_t *reference, stoc_t *rewrite),
+               int i) {
+    fprintf(stderr, "TODO: Actually implement exhsearch for lr35902\n");
+    exit(1);
 }
 
-void read_prog(rewrite_t * r, uint8_t * raw, int length) {
+void read_prog(rewrite_t *r, uint8_t *raw, int length) {
     int offs = 0;
     int ins = 0;
     int address = r->org;
 
-    for(;;) {
-        if(offs > length) break;
+    for (;;) {
+        if (offs > length)
+            break;
 
         instruction_t *i = &(r->instructions[ins++]);
         i->address = address;
 
-		uint8_t b = raw[offs++];
-		uint8_t c = raw[offs];
+        uint8_t b = raw[offs++];
+        uint8_t c = raw[offs];
 
-		if(b == 0xed) {
-			i->opcode = PREFIX_ED | c;
-			offs++;
-		}
+        if (b == 0xed) {
+            i->opcode = PREFIX_ED | c;
+            offs++;
+        }
 
-		else if(b == 0xcb) {
-			i->opcode = PREFIX_CB | c;
-			offs++;
-		}
+        else if (b == 0xcb) {
+            i->opcode = PREFIX_CB | c;
+            offs++;
+        }
 
-		else if(b == 0xdd) {
-			if(c == 0xcb) {
-				offs++;
-				i->operand = PREFIX_DDCB | raw[offs++];
-				i->opcode = PREFIX_DDCB | raw[offs++];
-			}
-			else
-			{
-				i->opcode = PREFIX_DD | c;
-				offs++;
-			}
-		}
+        else if (b == 0xdd) {
+            if (c == 0xcb) {
+                offs++;
+                i->operand = PREFIX_DDCB | raw[offs++];
+                i->opcode = PREFIX_DDCB | raw[offs++];
+            } else {
+                i->opcode = PREFIX_DD | c;
+                offs++;
+            }
+        }
 
-		else if(b == 0xfd) {
-			if(c == 0xcb) {
-				offs++;
-				i->operand = PREFIX_DDCB | raw[offs++];
-				i->opcode = PREFIX_FDCB | raw[offs++];
-			}
-			else
-			{
-				i->opcode = PREFIX_FD | c;
-				offs++;
-			}
-		}
-		
-		else {
-			i->opcode = PREFIX_NONE | b;
-		}
+        else if (b == 0xfd) {
+            if (c == 0xcb) {
+                offs++;
+                i->operand = PREFIX_DDCB | raw[offs++];
+                i->opcode = PREFIX_FDCB | raw[offs++];
+            } else {
+                i->opcode = PREFIX_FD | c;
+                offs++;
+            }
+        }
 
-		if(instrdata(i)->operandlength == 1) {
-			offs++;
-			i->operand = raw[offs++];
-		}
+        else {
+            i->opcode = PREFIX_NONE | b;
+        }
 
-		if(instrdata(i)->operandlength == 2) {
-			uint16_t l = raw[offs++];
-			uint16_t h = raw[offs++];
-			i->operand = (h << 8) | l;
-		}
-    }   
+        if (instrdata(i)->operandlength == 1) {
+            offs++;
+            i->operand = raw[offs++];
+        }
+
+        if (instrdata(i)->operandlength == 2) {
+            uint16_t l = raw[offs++];
+            uint16_t h = raw[offs++];
+            i->operand = (h << 8) | l;
+        }
+    }
     r->length = ins;
 }
