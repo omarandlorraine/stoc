@@ -4,6 +4,7 @@
 bool equivalence(stoc_t *a, stoc_t *b);
 void measure(stoc_t *c);
 void testcase_deinit();
+void cmdlin_tcout();
 
 // The codes below need to be powers of two
 #define NORMAL_EXIT 0

@@ -19,10 +19,17 @@
 #define COMPUTEBUDGET 10000
 
 static int num_test_cases = 0;
+static bool tcout = false;
 
 uint8_t *testcases[TESTCASE_NO];
 
+void cmdlin_tcout() {
+	tcout = true;
+}
+
 void print_test_case(uint8_t *test, size_t length) {
+	if(!tcout)
+		return;
     printf("testcase ");
     for (int i = 0; i < length; i++) {
         printf("$%02x ", test[i]);
@@ -54,7 +61,7 @@ bool create_test_case(stoc_t *reference, stoc_t *rewrite) {
 
     if (num_test_cases < TESTCASE_NO)
         testcases[num_test_cases++] = tc;
-    // print_test_case(tc, test - tc);
+    print_test_case(tc, test - tc);
     return run_test_case(tc, rewrite);
 }
 

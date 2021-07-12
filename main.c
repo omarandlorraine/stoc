@@ -33,6 +33,10 @@ void parseoption(char *opt, char *progname) {
         set_optimization(optimize_speed);
         return;
     }
+    if (!strcmp(opt, "-tcout")) {
+        cmdlin_tcout();
+        return;
+    }
     fprintf(stderr, "Unknown option %s\n", opt);
     help(progname);
 }
