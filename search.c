@@ -30,6 +30,8 @@ static void remove_instr(stoc_t *proposal) {
 }
 
 static void insert_instr(stoc_t *proposal) {
+    if (proposal->program.length >= REWRITE_LEN - 1)
+        return;
     int rnd = rand();
     int offs = rnd % (proposal->program.length);
     proposal->program.length++;
