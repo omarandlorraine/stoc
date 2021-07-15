@@ -386,7 +386,6 @@ void read_prog(rewrite_t *r, uint8_t *raw, int length) {
         }
 
         if (instrdata(i)->operandlength == 1) {
-            offs++;
             i->operand = raw[offs++];
         }
 
