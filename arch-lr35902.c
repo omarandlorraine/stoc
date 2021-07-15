@@ -107,60 +107,23 @@ instrdata_t *instrdata(instruction_t *i) {
 #define REGISTER_B ((struct LR35902 *)c->emu)->registers[0]
 #define REGISTER_C ((struct LR35902 *)c->emu)->registers[1]
 
-int live_in_a(stoc_t *c, decl_t *d, uint8_t **scram) {
-    REGISTER_A = consume_scram(scram);
+int live_in_reg8(stoc_t *c, decl_t *d, uint8_t **scram) {
+    ((struct LR35902 *)c->emu)->registers[d->start] = consume_scram(scram);
     return 0;
 }
 
-int live_in_b(stoc_t *c, decl_t *d, uint8_t **scram) {
-    REGISTER_B = consume_scram(scram);
-    return 0;
-}
-
-int live_in_c(stoc_t *c, decl_t *d, uint8_t **scram) {
-    REGISTER_C = consume_scram(scram);
-    return 0;
-}
-
-int live_out_a(stoc_t *c, decl_t *d, uint8_t **scram) {
+int live_out_reg8(stoc_t *c, decl_t *d, uint8_t **scram) {
     uint8_t s = consume_scram(scram);
-    if (REGISTER_A == s) {
+    uint8_t r = ((struct LR35902 *)c->emu)->registers[d->start];
+    if (r == s) {
         return 0;
     } else {
         return 1;
     }
 }
 
-int setup_live_out_a(stoc_t *c, decl_t *d, uint8_t **scram) {
-    output_scram(scram, REGISTER_A);
-    return 0;
-}
-
-int live_out_b(stoc_t *c, decl_t *d, uint8_t **scram) {
-    uint8_t s = consume_scram(scram);
-    if (REGISTER_B == s) {
-        return 0;
-    } else {
-        return 1;
-    }
-}
-
-int setup_live_out_b(stoc_t *c, decl_t *d, uint8_t **scram) {
-    output_scram(scram, REGISTER_B);
-    return 0;
-}
-
-int live_out_c(stoc_t *c, decl_t *d, uint8_t **scram) {
-    uint8_t s = consume_scram(scram);
-    if (REGISTER_C == s) {
-        return 0;
-    } else {
-        return 1;
-    }
-}
-
-int setup_live_out_c(stoc_t *c, decl_t *d, uint8_t **scram) {
-    output_scram(scram, REGISTER_C);
+int setup_live_out_reg8(stoc_t *c, decl_t *d, uint8_t **scram) {
+    output_scram(scram, ((struct LR35902 *)c->emu)->registers[d->start]);
     return 0;
 }
 
@@ -225,15 +188,18 @@ int run_decl(stoc_t *c, decl_t *d, uint8_t **scram) {
 
 void register_in_name(decl_t *d, char *name) {
     if (!strcmp(name, "a")) {
-        d->fn = live_in_a;
+        d->fn = live_in_reg8;
+        d->start = 7;
         return;
     }
     if (!strcmp(name, "b")) {
-        d->fn = live_in_b;
+        d->fn = live_in_reg8;
+        d->start = 0;
         return;
     }
     if (!strcmp(name, "c")) {
-        d->fn = live_in_c;
+        d->fn = live_in_reg8;
+        d->start = 1;
         return;
     }
     fprintf(stderr, "Unknown register name \"%s\" in " __FILE__ "\n", name);
@@ -242,18 +208,21 @@ void register_in_name(decl_t *d, char *name) {
 
 void register_out_name(decl_t *d, char *name) {
     if (!strcmp(name, "a")) {
-        d->fn = live_out_a;
-        d->setup = setup_live_out_a;
+        d->fn = live_out_reg8;
+        d->setup = setup_live_out_reg8;
+        d->start = 7;
         return;
     }
     if (!strcmp(name, "b")) {
-        d->fn = live_out_b;
-        d->setup = setup_live_out_b;
+        d->fn = live_out_reg8;
+        d->setup = setup_live_out_reg8;
+        d->start = 0;
         return;
     }
     if (!strcmp(name, "c")) {
-        d->fn = live_out_c;
-        d->setup = setup_live_out_c;
+        d->fn = live_out_reg8;
+        d->setup = setup_live_out_reg8;
+        d->start = 1;
         return;
     }
     fprintf(stderr, "Unknown register name \"%s\" in " __FILE__ "\n", name);
