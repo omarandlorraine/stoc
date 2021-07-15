@@ -22,10 +22,10 @@ void endofline() {
     }
 }
 
-decl_t *parse_register_in(int (*fn)(stoc_t *c, decl_t *d, uint8_t **scram)) {
+decl_t *parse_register_in() {
     endofline();
     decl_t *d = malloc(sizeof(decl_t));
-    d->fn = fn;
+    d->fn = NULL;
     d->setup = setup_byte_in;
     d->start = 0;
     d->length = 1;
@@ -33,13 +33,11 @@ decl_t *parse_register_in(int (*fn)(stoc_t *c, decl_t *d, uint8_t **scram)) {
     return d;
 }
 
-decl_t *parse_register_out(int (*fn)(stoc_t *c, decl_t *d, uint8_t **scram),
-                           int (*setup)(stoc_t *c, decl_t *d,
-                                        uint8_t **scram)) {
+decl_t *parse_register_out() {
     endofline();
     decl_t *d = malloc(sizeof(decl_t));
-    d->fn = fn;
-    d->setup = setup;
+    d->fn = NULL;
+    d->setup = NULL;
     d->start = 0;
     d->length = 1;
     d->next = NULL;
@@ -126,13 +124,13 @@ decl_t *parseline(char *line, stoc_t *c) {
         return parse_run(&c->program);
     if (!strcmp(f, "register-in")) {
         char *regname = strtok(NULL, DELIM);
-        decl_t *d = parse_register_in(live_in_a);
+        decl_t *d = parse_register_in();
         register_in_name(d, regname);
         return d;
     }
     if (!strcmp(f, "register-out")) {
         char *regname = strtok(NULL, DELIM);
-        decl_t *d = parse_register_out(live_out_a, setup_live_out_a);
+        decl_t *d = parse_register_out();
         register_out_name(d, regname);
         return d;
     }
