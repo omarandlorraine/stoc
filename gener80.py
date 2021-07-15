@@ -48,14 +48,14 @@ addopc("none", 0x1f, "implied", "rra", "", 0)
 for a,r in enumerate(register_pairs):
 	p = a << 4
 	addopc("none", 1 + p, "rpimm16", "ld %s, " % register_pairs[a], "", 2)
-	addopc("none", 9 + p, "rpimm16", "add hl, %s" % register_pairs[a], "", 0)
+	addopc("none", 9 + p, "implied", "add hl, %s" % register_pairs[a], "", 0)
 	addopc("none", codepoint(z=3, p=a), "implied", "inc %s" % register_pairs[a], "", 0)
 	addopc("none", codepoint(z=3, p=a, q=1), "implied", "dec %s" % register_pairs[a], "", 0)
 
 for a,r in enumerate(registers):
 	addopc("none", codepoint(z=4, y=a), "implied", "inc %s" % r, "", 0)
 	addopc("none", codepoint(z=5, y=a), "implied", "dec %s" % r, "", 0)
-	addopc("none", codepoint(z=6, y=a), "rimm8", "ld %s, " % r, "", 0)
+	addopc("none", codepoint(z=6, y=a), "rimm8", "ld %s, " % r, "", 1)
 
 for s, sr in enumerate(registers):
 	for d, dr in enumerate(registers):
