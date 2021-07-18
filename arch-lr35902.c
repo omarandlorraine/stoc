@@ -330,8 +330,44 @@ void mutate_opcode(instruction_t *i) {
 bool exhsearch(stoc_t *reference, stoc_t *rewrite,
                bool (*continuation)(stoc_t *reference, stoc_t *rewrite),
                int i) {
-    fprintf(stderr, "TODO: Actually implement exhsearch for lr35902\n");
-    exit(1);
+
+    instruction_t *instr = &rewrite->program.instructions[i];
+    uint16_t *opcode = &instr->opcode;
+    uint16_t *operand = &instr->operand;
+
+    if (i < 0) {
+        // End of this branch
+        if (continuation(reference, rewrite)) {
+            return true;
+        }
+        return false;
+    }
+
+    iterator_t opciter;
+    iterator_t operiter;
+
+    for (iterator_init(&instructions_implied, &opciter);
+         pick_iterate(&opciter, opcode);)
+        if (exhsearch(reference, rewrite, continuation, i - 1))
+            return true;
+
+    for (iterator_init(&constants, &operiter);
+         pick_iterate(&operiter, operand);) {
+
+        for (iterator_init(&instructions_rimm8, &opciter);
+             pick_iterate(&opciter, opcode);) {
+            if (exhsearch(reference, rewrite, continuation, i - 1))
+                return true;
+        }
+
+        for (iterator_init(&instructions_rpimm16, &opciter);
+             pick_iterate(&opciter, opcode);) {
+            if (exhsearch(reference, rewrite, continuation, i - 1))
+                return true;
+        }
+    }
+
+    return false;
 }
 
 void read_prog(rewrite_t *r, uint8_t *raw, int length) {
